@@ -23,3 +23,6 @@ class DeviceType(Enum):
     RFID = 3
     BUTTON = 4
 
+class LaneStatus(Enum):
+    LANE_ACTIVE = 1
+    LANE_NOT_ACTIVE = 2
