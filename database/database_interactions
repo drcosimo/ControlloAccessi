@@ -1,0 +1,107 @@
+from .database_connection import DatabaseConnection
+
+DATABASE_NAME = "database.db"
+
+"""
+Metodi utilizzati per gestire le interazioni con il database
+"""
+
+def findIdPersonFromBadge(badge):
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT IdPerson FROM Person AS p WHERE p.badge = ?", (badge,))
+
+        result = cursor.fetchall()
+
+        if len(result) > 1:
+            pass
+            # TODO: aggiungere l'errore di più persone per un badge
+        elif len(result) == 0:
+            return None
+
+    return result[0][0]
+
+
+def findIdVehicleFromPlate(plate):
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT IdVehicle FROM Vehicle AS v WHERE v.plate = ?", (plate,))
+
+        result = cursor.fetchall()
+
+        if len(result) > 1:
+            pass
+            # TODO: aggiungere l'errore di più persone per un badge
+
+    return result[0][0]
+
+
+def selectPolicyFromPerson(badge, actualTime):
+
+    # TODO: aggiungere il controllo dell'errore se viene aggiunto l'errore
+    idperson = findIdPersonFromBadge(badge)
+
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT GrantPolicy FROM Policy AS p INNER JOIN PersonPolicy AS pp "
+                        "ON pp.GrantPolicy = p.GrantPolicy WHERE pp.IdPerson = ? "
+                        "AND ? BETWEEN pp.StartTime AND pp.EndTime", (idperson,actualTime,))
+        
+
+
+def selectPolicyFromVehicle(plate, actualTime):
+
+    # TODO: aggiungere il controllo dell'errore se viene aggiunto l'errore
+    idvehicle = findIdVehicleFromPlate(plate)
+
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT GrantPolicy FROM Policy AS p INNER JOIN VehiclePolicy AS vp "
+                        "ON vp.GrantPolicy = p.GrantPolicy WHERE vp.IdVehicle = ? "
+                        "AND ? BETWEEN vp.StartTime AND vp.EndTime", (idvehicle,actualTime,))
+
+
+# TODO: serve ancora sto metodo?
+def findPlateInVehicles(plate):
+    if findIdVehicleFromPlate(plate) is not None:
+        return True
+    else:
+        return False
+
+
+def findBadgeInPersons(badge):
+    if findIdPersonFromBadge(badge) is not None:
+        return True
+    else:
+        return False
+
+
+def findPlateAndBadge(plate, badge):
+    idperson = findIdPersonFromBadge(badge)
+    idvehicle = findIdVehicleFromPlate(plate)
+
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT COUNT(*) FROM PersonVehicle "
+                        "WHERE IdPerson = ? AND IdVehicle = ?", (idperson, idvehicle,))
+        result = cursor.fetchall()
+        
+    if len(result) > 1:
+        # TODO: sollevare un eccezione
+        pass
+    elif len(result) == 0:
+        return False
+    elif len(result) == 1:
+        return True
+
+
+def insertTransitHistory(idPerson, idVehicle, date):
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("INSERT INTO TransitHistory VALUES (?, ?, ?)", (idPerson, idVehicle, date))
