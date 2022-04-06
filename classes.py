@@ -1,3 +1,4 @@
+from socketserver import TCPServer
 from reactive.Controllo_Accessi.enums import DeviceType, EventType, GateName
 
 class Lane():
@@ -18,18 +19,29 @@ class TCPDevice():
         self.eventType = eventType
         self.deviceType = deviceType
 
-class FrontCam(TCPClient):
+class FrontCam(TCPServer):
     def __init__(self, ip, port) -> None:
         super().__init__(ip, port,EventType.READ_VEHICLE_CREDENTIAL,DeviceType.FRONT_CAM)
 
-class RearCam(TCPClient):
+class RearCam(TCPServer):
     def __init__(self, ip, port) -> None:
         super().__init__(ip, port, EventType.READ_VEHICLE_CREDENTIAL, DeviceType.REAR_CAM)
 
-class Rfid(TCPServer):
+class Rfid(TCPClient):
     def __init__(self, ip, port) -> None:
         super().__init__(ip, port, EventType.READ_PERSON_CREDENTIAL, DeviceType.RFID)
 
+class Button(TCPServer):
+    def __init__(self, ip, port) -> None:
+        super().__init__(ip, port, EventType.HUMAN_ACTION, DeviceType.BUTTON)
+
+
+class Event():
+    def __init__(self,value,eventType,device:TCPDevice) -> None:
+        self.value = value
+        self.deviceType = device.deviceType
+        self.device = device
+        self.eventType = eventType
 
 ''' TODO
 # implementano i metodi per la creazione della socket e la creazione dell'observable 

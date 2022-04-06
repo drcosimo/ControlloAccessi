@@ -21,4 +21,5 @@ class DeviceType(Enum):
     FRONT_CAM = 1
     REAR_CAM = 2
     RFID = 3
+    BUTTON = 4
 
