@@ -1,5 +1,8 @@
 # In questo file verranno inseriti tutti gli errori custom
 
+from pandas import cut
+
+
 class CustomErrors(Exception):
     def __init__(self, message):
         self.message = message
@@ -16,5 +19,15 @@ class AlreadyInitialized(CustomErrors):
     
     def addInLogger(self):
         # TODO: in che formato viene inserito l'errore nel logger?
+        super().addInLogger()
+
+
+class NotUniqueException(CustomErrors):
+    """ Eccezione che viene sollevata quando un attributo del database non è unico nella tabella """
+    def __init__(self, message):
+        super().__init__(message)
+
+    def addInLogger(self):
+        # TODO: gestire il formato del messaggio d'errore
         super().addInLogger()
         
