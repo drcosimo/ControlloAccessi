@@ -1,7 +1,13 @@
-from random import random
+from os import curdir
+import random
+from sqlite3 import Cursor
 import string
-from .database_connection import DatabaseConnection
-from errors import NotUniqueException
+
+from numpy import number
+from database_connection import DatabaseConnection
+from custom_errors import NotUniqueException
+import uuid
+
 
 DATABASE_NAME = "database.db"
 
@@ -38,8 +44,10 @@ def createVehicleTable():
 def createPersonVehicleTable():
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS PersonVehicle(IdPerson INTEGER PRIMARY KEY, "
-                        "IdVehicle INTEGER PRIMARY KEY, "
+        cursor.execute("CREATE TABLE IF NOT EXISTS PersonVehicle("
+                        "IdPerson INTEGER, "
+                        "IdVehicle INTEGER, "
+                        "PRIMARY KEY (IdPerson, IdVehicle)"
                         "FOREIGN KEY(IdPerson) REFERENCES Person(IdPerson), "
                         "FOREIGN KEY(IdVehicle) REFERENCES Vehicle(IdVehicle))")
 
@@ -47,24 +55,29 @@ def createPersonVehicleTable():
 def createPolicyTable():
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS Policy(Policy INTEGER PRIMARY KEY)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS Policy(GrantPolicy INTEGER PRIMARY KEY)")
 
 
 def createPersonPolicyTable():
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
-        cursor.execute("CREATE PersonPolicy(IdPersonPolicy INTEGER PRIMARY KEY, "
+        cursor.execute("CREATE TABLE IF NOT EXISTS PersonPolicy("
+                        "IdPersonPolicy INTEGER PRIMARY KEY, "
                         "IdPerson INTEGER NOT NULL, "
+                        "GrantPolicy INTEGER NOT NULL, "
                         "StartTime TIME NOT NULL, "
                         "EndTime TIME NOT NULL, "
-                        "FOREIGN KEY(IdPerson) REFERENCES Person(IdPerson))")
+                        "FOREIGN KEY(IdPerson) REFERENCES Person(IdPerson), "
+                        "FOREIGN KEY(GrantPolicy) REFERENCES Policy(GrantPolicy))")
 
 
 def createVehiclePolicyTable():
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
-        cursor.execute("CREATE VehiclePolicy(IdVehiclePolicy INTEGER PRIMARY KEY, "
+        cursor.execute("CREATE TABLE IF NOT EXISTS VehiclePolicy("
+                        "IdVehiclePolicy INTEGER PRIMARY KEY, "
                         "IdVehicle INTEGER NOT NULL, "
+                        "GrantPolicy INTEGER NOT NULL, "
                         "StartTime TIME NOT NULL, "
                         "EndTime TIME NOT NULL, "
                         "FOREIGN KEY(IdVehicle) REFERENCES Vehicle(IdVehicle))")
@@ -73,10 +86,11 @@ def createVehiclePolicyTable():
 def createTransitHistoryTable():
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
-        cursor.execute("CREATE TransitHistory (IdTransit INTEGER PRIMARY KEY, "
+        cursor.execute("CREATE TABLE IF NOT EXISTS TransitHistory("
+                        "IdTransit INTEGER PRIMARY KEY, "
                         "IdPerson INTEGER, "
                         "IdVehicle INTEGER, "
-                        "Date DATE NOT NULL, "
+                        "TransitDate DATE NOT NULL, "
                         "FOREIGN KEY(IdPerson) REFERENCES Person(IdPerson), "
                         "FOREIGN KEY(IdVehicle) REFERENCES Vehicle(IdVehicle))")
 
@@ -95,7 +109,7 @@ def insertVehicle(plate, brand, model, color):
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
 
-        cursor.execute("INSER INTO Vehicle (Plate, Brand, Model, Color) VALUES (?, ?, ?, ?)",
+        cursor.execute("INSERT INTO Vehicle (Plate, Brand, Model, Color) VALUES (?, ?, ?, ?)",
         (plate, brand, model, color,))
 
 
@@ -110,32 +124,54 @@ def insertPolicy():
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
 
-        cursor.execute("INSERT INTO Policy (Policy) VALUES (1), (2), (3)")
+        cursor.execute("INSERT INTO Policy (GrantPolicy) VALUES (1), (2), (3)")
 
 
-def insertPersonPolicy(idperson, start, end):
+def insertPersonPolicy(idperson, grantpolicy, start, end):
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
 
-        cursor.execute("INSERT INTO PersonPolicy (IdPerson, StartTime, EndTime) "
-                        "VALUES (?, ?, ?)", (idperson, start, end,))
+        cursor.execute("INSERT INTO PersonPolicy (IdPerson, GrantPolicy, StartTime, EndTime) "
+                        "VALUES (?, ?, ?, ?)", (idperson, grantpolicy, start, end,))
 
 
-def insertVehiclePolicy(idvehicle, start, end):
+def insertVehiclePolicy(idvehicle, grantpolicy, start, end):
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
 
-        cursor.execute("INSERT INTO VehiclePolicy (IdVehicle, StartTime, EndTime) "
-                        "VALUES (?, ?, ?)", (idvehicle, start, end,))
+        cursor.execute("INSERT INTO VehiclePolicy (IdVehicle, GrantPolicy, StartTime, EndTime) "
+                        "VALUES (?, ?, ?, ?)", (idvehicle, grantpolicy, start, end,))
 
 
 def insertTransitHistory(idPerson, idVehicle, date):
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
 
-        cursor.execute("INSERT INTO TransitHistory (IdPerson, IdVehicle, Date) "
+        cursor.execute("INSERT INTO TransitHistory (IdPerson, IdVehicle, TransitDate) "
                         "VALUES (?, ?, ?)", (idPerson, idVehicle, date,))
 
+
+def insertRandomPeoples(number):
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        for i in range(number):
+            cursor.execute("INSERT INTO Person(Badge) VALUES (?)", (str(uuid.uuid1()),))
+
+
+def insertRandomVehicles(number):
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        for i in range(number):
+            cursor.execute("INSERT INTO Vehicle(Plate) VALUES (?)", (createRandomPlate(),))
+
+
+def updateVehicleOfPerson(idperson, idvehicle):
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("UPDATE PersonVehicle SET IdVehicle = ? WHERE IdPerson = ?", (idvehicle, idperson,))
 
 
 ###################### METODI PER LE INTERROGAZIONI ######################
@@ -173,13 +209,12 @@ def findIdVehicleFromPlate(plate):
 
 def selectPolicyFromPerson(badge, actualTime):
 
-    # TODO: aggiungere il controllo dell'errore se viene aggiunto l'errore
     idperson = findIdPersonFromBadge(badge)
 
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
 
-        cursor.execute("SELECT GrantPolicy FROM Policy AS p INNER JOIN PersonPolicy AS pp "
+        cursor.execute("SELECT p.GrantPolicy FROM Policy AS p INNER JOIN PersonPolicy AS pp "
                         "ON pp.GrantPolicy = p.GrantPolicy WHERE pp.IdPerson = ? "
                         "AND ? BETWEEN pp.StartTime AND pp.EndTime", (idperson,actualTime,))
 
@@ -198,7 +233,7 @@ def selectPolicyFromVehicle(plate, actualTime):
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
 
-        cursor.execute("SELECT GrantPolicy FROM Policy AS p INNER JOIN VehiclePolicy AS vp "
+        cursor.execute("SELECT p.GrantPolicy FROM Policy AS p INNER JOIN VehiclePolicy AS vp "
                         "ON vp.GrantPolicy = p.GrantPolicy WHERE vp.IdVehicle = ? "
                         "AND ? BETWEEN vp.StartTime AND vp.EndTime", (idvehicle,actualTime,))
         
@@ -217,7 +252,7 @@ def findPlateAndBadge(plate, badge):
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
 
-        cursor.execute("SELECT COUNT(*) FROM PersonVehicle "
+        cursor.execute("SELECT * FROM PersonVehicle "
                         "WHERE IdPerson = ? AND IdVehicle = ?", (idperson, idvehicle,))
         result = cursor.fetchall()
 
@@ -235,11 +270,89 @@ def extractRandomPlate():
         cursor.execute("SELECT COUNT(*) FROM Vehicle")
         numbersVehicle = int(cursor.fetchall()[0][0])
 
-        randomIndex = "".join([random.choice(string.digits) for i in range(numbersVehicle)])
+        randomIndex = random.randint(1, numbersVehicle)
         cursor.execute("SELECT Plate FROM Vehicle AS V WHERE V.IdVehicle = ?", (randomIndex,))
         result = cursor.fetchall()
 
-    return int(result[0][0])
+    return result
+
+
+def findAllPersons():
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM Person")
+        result = cursor.fetchall()
+
+    return result
+
+
+def findAllVehicles():
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM Vehicle")
+        result = cursor.fetchall()
+
+    return result
+
+
+def findPolicy():
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM Policy")
+        result = cursor.fetchall()
+
+    return result
+
+
+def findPersonPolicy(idperson):
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT GrantPolicy FROM PersonPolicy WHERE IdPerson = ?", (idperson,))
+        result = cursor.fetchall()
+
+    return result
+
+    
+def findVehiclePolicy(idvehicle):
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT GrantPolicy FROM VehiclePolicy WHERE IdVehicle = ?", (idvehicle, ))
+        result = cursor.fetchall()
+
+    return result
+
+
+def deleteVehiclePolicy(idvehiclepolicy):
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("DELETE FROM VehiclePolicy WHERE 1 = ?", (idvehiclepolicy,))
+
+
+def findAllPersonVehicle():
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM PersonVehicle")
+        result = cursor.fetchall()
+
+    return result
+
+
+def findAllTransits():
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM TransitHistory")
+        result = cursor.fetchall()
+
+    return result
+
 
 
 ###################### METODI DI UTILITA' ######################
@@ -248,8 +361,8 @@ def createAllTables():
     createVehicleTable()
     createPersonVehicleTable()
     createPolicyTable()
-    createPersonTable()
-    createVehicleTable()
+    createPersonPolicyTable()
+    createVehiclePolicyTable()
     createTransitHistoryTable()
 
 
@@ -268,11 +381,20 @@ def findBadgeInPersons(badge):
 
 
 def createRandomPlate():
-    with DatabaseConnection(DATABASE_NAME) as connection:
-        cursor = connection.cursor()
+    firsts_letters = "".join([random.choice(string.ascii_letters) for i in range(2)])
+    numbers = "".join([random.choice(string.digits) for i in range(3)])
+    lasts_letters = "".join([random.choice(string.ascii_letters) for i in range(2)])
 
-        firsts_letters = "".join([random.choice(string.ascii_letters) for i in range(2)])
-        numbers = "".join([random.choice(string.digits) for i in range(3)])
-        lasts_letters = "".join([random.choice(string.ascii_letters) for i in range(2)])
+    plate = firsts_letters.upper() + numbers + lasts_letters.upper()
 
-        plate = firsts_letters.upper() + numbers + lasts_letters.upper()
+    return plate
+
+
+def printPersons(persons):
+    for person in persons:
+        print(f"ID: {person[0]} \nBadge: {person[6]}")
+
+
+def printVehicles(vehicles):
+    for vehicle in vehicles:
+        print(f"ID: {vehicle[0]} \nPlate: {vehicle[1]}")

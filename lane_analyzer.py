@@ -1,7 +1,6 @@
 import datetime
-from errors import AlreadyInitialized, CustomErrors
+from database.custom_errors import AlreadyInitialized, CustomErrors
 from reactivex import Subject
-import database.database_connection as database_connection
 
 class TransitAnalyzer(Subject):
 

@@ -1,8 +1,5 @@
 # In questo file verranno inseriti tutti gli errori custom
 
-from pandas import cut
-
-
 class CustomErrors(Exception):
     def __init__(self, message):
         self.message = message
