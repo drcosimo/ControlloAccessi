@@ -1,9 +1,7 @@
 from os import curdir
 import random
-from sqlite3 import Cursor
 import string
 
-from numpy import number
 from database_connection import DatabaseConnection
 from custom_errors import NotUniqueException
 import uuid

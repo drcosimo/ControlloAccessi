@@ -33,3 +33,5 @@ database.createAllTables()
 
 # database.printVehicles(database.findAllVehicles())
 # print(database.selectPolicyFromVehicle("AA123BB", "12:30:00"))
+
+database.printPersons(database.findAllPersons())
