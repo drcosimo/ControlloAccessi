@@ -6,14 +6,21 @@ class GateName(Enum):
     GATE_EST = 3
     GATE_OVEST = 4
 
+DB_IP = "127.0.0.1"
+DB_PORT = 10010
+
+BAR_IP = "127.0.0.1"
+BAR_PORT = 10011
+
 class EventType(Enum):
-    PLATE = 1
-    BADGE = 2
-    HUMAN_ACTION = 3
+    ONLY_BADGE_POLICY = 1
+    ONLY_PLATE_POLICY = 2
+    BADGE_PLATE_POLICY = 3
     NO_POLICY = 4
-    ONLY_BADGE_POLICY = 5
-    ONLY_PLATE_POLICY = 6
-    BADGE_PLATE_POLICY = 7
+    PLATE = 5
+    BADGE = 6
+    HUMAN_ACTION = 7
+    OPEN_GATE = 8
     BADGE_PLATE_OK = 8
     BADGE_OK = 9
     PLATE_OK = 10
@@ -27,10 +34,13 @@ class TransitState(Enum):
     GRANT_REQ_BADGE = 5
     END_TRANSIT = 6
     GRANT_OK = 7
-    WAIT_FOR_BADGE = 8
-    WAIT_FOR_PLATE = 9
-    MANUAL_GRANT_OK = 10
-    GRANT_REQ_BADGEPLATE = 11
+    MANUAL_GRANT_OK = 8
+    GRANT_RES_BADGEPLATE = 9
+    WAIT_FOR_POLICY_PLATE = 10
+    WAIT_FOR_POLICY_BADGE = 11
+    WAIT_FOR_PLATE = 12
+    WAIT_FOR_BADGE = 13
+    GRANT_REQ_BADGEPLATE = 14
 
 class DeviceType(Enum):
     FRONT_CAM = 1
@@ -38,6 +48,15 @@ class DeviceType(Enum):
     RFID = 3
     BUTTON = 4
     SERVER = 5
+    BAR = 6
+
+class RequestType(Enum):
+    POLICY_FROM_BADGE = 1
+    POLICY_FROM_PLATE = 2
+    FIND_PLATE = 3
+    FIND_BADGE = 4
+    FIND_PLATE_BADGE = 5
+    INSERT_TRANSIT_HISTORY = 6
 
 class LaneStatus(Enum):
     LANE_ACTIVE = 1

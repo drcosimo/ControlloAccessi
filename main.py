@@ -20,7 +20,6 @@ async def main():
         
         obs = gateNord.getLane(0).getDevice(0).createObservable()
         obs.subscribe(TestAnalyzer(gateNord.getLane(0)))
-        '''
         # per ogni lane del gate
         for index,lane in enumerate(gateNord.getLanes()):
             # se la lane è attiva
@@ -38,7 +37,6 @@ async def main():
                 laneAnalyzers.append(Analyzer(lane))
                 # sottoscrivo un analyzer per ogni lane
                 laneObservables[index].subscribe(laneAnalyzers[index])
-            '''
 
 if __name__ == "__main__":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
