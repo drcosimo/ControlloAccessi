@@ -1,5 +1,4 @@
 import asyncio
-from mimetypes import init
 import string
 import reactivex
 from enums import *
@@ -61,6 +60,9 @@ class TCPDevice():
         self.eventType = eventType
         self.deviceType = deviceType
         self.lane = lane
+    
+    def createObservable(self) -> reactivex.Observable:
+        pass
 
 class Event():
     def __init__(self,value,eventType,deviceType) -> None:
@@ -194,6 +196,7 @@ class Bar(TCPClient):
         super().__init__(ip, port, EventType.OPEN_GATE, DeviceType.BAR, lane)
 
 class TestAnalyzer(reactivex.Observable):
+
     def __init__(self,lane) -> None:
         self.lane = lane
         super().__init__()
@@ -207,12 +210,33 @@ class TestAnalyzer(reactivex.Observable):
     def on_error(self, error: Exception) -> None:
         print("errore:{0}".format(error))
 
+class Connection():
+    def __init__(self) -> None:
+        self.dp_ip = "127.0.0.1"
+        self.db_port = 10005
+        self.bar_ip = "127.0.0.1"
+        self.bar_port = 10010
+    
+    async def connectToDb(self,req):
+        r,w = await asyncio.open_connection(self.dp_ip,self.db_port)
+        w.write(req.encode("utf-8"))
+        await w.drain()
 
-''' TODO
-# classi observer => Analyzer, Logger
-'''
+        w.close()
+        await w.wait_closed()
+    
+    async def connectToBar(self):
+        r,w = await asyncio.open_connection(self.bar_ip,self.bar_port)
+        w.write("OPEN_GATE".encode("utf-8"))
+        await w.drain()
 
-''' TODO
-# classe di interfacciamento con il db => tutte le chiamate al db saranno 
-# fatte tramite metodi di questa classe 
-'''
+        w.close()
+        await w.wait_closed()
+
+    def dbRequest(self,reqType,reqArgs):
+        # richiesta grant badgeplate
+        req = "{0}".format(reqType)
+        for arg in reqArgs:
+            req += ",{0}".format(arg)
+   
+        asyncio.create_task(self.connectToDb(req))

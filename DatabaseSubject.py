@@ -8,8 +8,8 @@ from classes import TCPDevice,Event
 from enums import DeviceType, EventType, RequestType
 
 class DatabaseSubject(Subject,TCPDevice):
-    def __init__(self,ip,port) -> None:
-        TCPDevice.__init__(ip,port)
+    def __init__(self,ip,port,lane) -> None:
+        TCPDevice.__init__(self,ip,port,None,DeviceType.SERVER,lane)
 
     def createObservable(self) -> Observable:
         def on_subscription(observer,scheduler):

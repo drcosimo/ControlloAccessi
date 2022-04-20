@@ -6,12 +6,6 @@ class GateName(Enum):
     GATE_EST = 3
     GATE_OVEST = 4
 
-DB_IP = "127.0.0.1"
-DB_PORT = 10010
-
-BAR_IP = "127.0.0.1"
-BAR_PORT = 10011
-
 class EventType(Enum):
     ONLY_BADGE_POLICY = 1
     ONLY_PLATE_POLICY = 2
@@ -28,19 +22,16 @@ class EventType(Enum):
 
 class TransitState(Enum):
     WAIT_FOR_TRANSIT = 1
-    TRANSIT_STARTED_PLATE = 2
-    TRANSIT_STARTED_BADGE = 3
-    GRANT_REQ_PLATE = 4
-    GRANT_REQ_BADGE = 5
-    END_TRANSIT = 6
-    GRANT_OK = 7
-    MANUAL_GRANT_OK = 8
-    GRANT_RES_BADGEPLATE = 9
-    WAIT_FOR_POLICY_PLATE = 10
-    WAIT_FOR_POLICY_BADGE = 11
-    WAIT_FOR_PLATE = 12
-    WAIT_FOR_BADGE = 13
-    GRANT_REQ_BADGEPLATE = 14
+    TRANSIT_STARTED = 2
+    GRANT_REQ = 3
+    END_TRANSIT = 4
+    GRANT_OK = 5
+    MANUAL_GRANT_OK = 6
+    GRANT_RES_BADGEPLATE = 7
+    GRANT_REQ_BADGEPLATE = 8
+    WAIT_FOR_RESPONSE = 9
+    WAIT_FOR_DATA = 10
+    GRANT_REFUSED = 11
 
 class DeviceType(Enum):
     FRONT_CAM = 1
@@ -51,8 +42,7 @@ class DeviceType(Enum):
     BAR = 6
 
 class RequestType(Enum):
-    POLICY_FROM_BADGE = 1
-    POLICY_FROM_PLATE = 2
+    POLICY = 1
     FIND_PLATE = 3
     FIND_BADGE = 4
     FIND_PLATE_BADGE = 5

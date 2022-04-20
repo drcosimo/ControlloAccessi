@@ -1,8 +1,8 @@
 from os import curdir
-import random
+import random 
 import string
 
-from database.database_connection import DatabaseConnection
+from database_connection import DatabaseConnection
 from custom_errors import NotUniqueException
 import uuid
 
@@ -63,8 +63,8 @@ def createPersonPolicyTable():
                         "IdPersonPolicy INTEGER PRIMARY KEY, "
                         "IdPerson INTEGER NOT NULL, "
                         "GrantPolicy INTEGER NOT NULL, "
-                        "StartTime TIME NOT NULL, "
-                        "EndTime TIME NOT NULL, "
+                        "StartTime TIME , "
+                        "EndTime TIME, "
                         "FOREIGN KEY(IdPerson) REFERENCES Person(IdPerson), "
                         "FOREIGN KEY(GrantPolicy) REFERENCES Policy(GrantPolicy))")
 
@@ -76,8 +76,8 @@ def createVehiclePolicyTable():
                         "IdVehiclePolicy INTEGER PRIMARY KEY, "
                         "IdVehicle INTEGER NOT NULL, "
                         "GrantPolicy INTEGER NOT NULL, "
-                        "StartTime TIME NOT NULL, "
-                        "EndTime TIME NOT NULL, "
+                        "StartTime TIME , "
+                        "EndTime TIME , "
                         "FOREIGN KEY(IdVehicle) REFERENCES Vehicle(IdVehicle))")
 
 
@@ -150,19 +150,24 @@ def insertTransitHistory(idPerson, idVehicle, date):
 
 
 def insertRandomPeoples(number):
-    with DatabaseConnection(DATABASE_NAME) as connection:
-        cursor = connection.cursor()
-
-        for i in range(number):
-            cursor.execute("INSERT INTO Person(Badge) VALUES (?)", (str(uuid.uuid1()),))
-
+    for i in range(number):   
+        with DatabaseConnection(DATABASE_NAME) as connection:
+            cursor = connection.cursor()
+            badge = str(uuid.uuid1())
+            cursor.execute("INSERT INTO Person(Badge) VALUES (?)", (badge,))
+            id = findIdPersonFromBadge(badge)
+            randPolicy = random.randint(1,4)
+            cursor.execute("INSERT INTO PersonPolicy(IdPerson,GrantPolicy) VALUES(?,?)", (id,randPolicy,))
 
 def insertRandomVehicles(number):
-    with DatabaseConnection(DATABASE_NAME) as connection:
-        cursor = connection.cursor()
-
-        for i in range(number):
-            cursor.execute("INSERT INTO Vehicle(Plate) VALUES (?)", (createRandomPlate(),))
+    for i in range(number):
+        with DatabaseConnection(DATABASE_NAME) as connection:
+            cursor = connection.cursor()            
+            plate = createRandomPlate()
+            cursor.execute("INSERT INTO Vehicle(Plate) VALUES (?)", (plate,))
+            id = findIdVehicleFromPlate(plate)
+            randPolicy = random.randint(1,4)
+            cursor.execute("INSERT INTO VehiclePolicy(IdVehicle,GrantPolicy) VALUES(?,?)", (id,randPolicy,))
 
 
 def updateVehicleOfPerson(idperson, idvehicle):
@@ -367,6 +372,17 @@ def findAllTransits():
 
 ###################### METODI DI UTILITA' ######################
 def createAllTables():
+    with DatabaseConnection(DATABASE_NAME) as conn:
+        cursor = conn.cursor()
+        cursor.execute("DROP TABLE IF EXISTS {0}".format("Person"))
+        cursor.execute("DROP TABLE IF EXISTS {0}".format("Vehicle"))
+        cursor.execute("DROP TABLE IF EXISTS {0}".format("PersonVehicle"))
+        cursor.execute("DROP TABLE IF EXISTS {0}".format("PersonPolicy"))
+        cursor.execute("DROP TABLE IF EXISTS {0}".format("VehiclePolicy"))
+        cursor.execute("DROP TABLE IF EXISTS {0}".format("Policy"))
+        cursor.execute("DROP TABLE IF EXISTS {0}".format("TransitHistory"))
+        
+        
     createPersonTable()
     createVehicleTable()
     createPersonVehicleTable()

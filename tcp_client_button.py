@@ -1,16 +1,13 @@
 import asyncio
 import random as rd
 import sys
-from database_interactions import extractRandomPlate
 
 async def main(port):
     try:
         r,w = await asyncio.open_connection("127.0.0.1",10000 + int(port))
         while True:
-            await asyncio.sleep(rd.randint(1,10))
-            print("plate detected")
-            plate = extractRandomPlate()
-            w.write(plate.encode("utf-8"))
+            await asyncio.sleep(rd.randint(5,15))
+            w.write("OPEN_GATE".encode("utf-8"))
             await w.drain()
     except KeyboardInterrupt:
         w.write_eof()
