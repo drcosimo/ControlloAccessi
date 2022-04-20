@@ -2,6 +2,8 @@ from os import curdir
 import random
 import string
 
+from numpy import concatenate
+
 from database.database_connection import DatabaseConnection
 from custom_errors import NotUniqueException
 import uuid
@@ -25,7 +27,7 @@ def createPersonTable():
                         "Surname varchar(255), "
                         "DateOfBirth date, "
                         "City varchar(255), "
-                        "Badge varchar(255) UNIQUE NOT NULL)")
+                        "Badge varchar(255) UNIQUE )")
 
 
 def createVehicleTable():
@@ -33,7 +35,7 @@ def createVehicleTable():
         cursor = connection.cursor()
         cursor.execute("CREATE TABLE IF NOT EXISTS Vehicle("
                         "IdVehicle INTEGER PRIMARY KEY, "
-                        "Plate varchar(7) NOT NULL UNIQUE, "
+                        "Plate varchar(7)  UNIQUE, "
                         "Brand varchar(255), "
                         "Model varchar(255), "
                         "Color varchar(255))")
@@ -61,10 +63,10 @@ def createPersonPolicyTable():
         cursor = connection.cursor()
         cursor.execute("CREATE TABLE IF NOT EXISTS PersonPolicy("
                         "IdPersonPolicy INTEGER PRIMARY KEY, "
-                        "IdPerson INTEGER NOT NULL, "
-                        "GrantPolicy INTEGER NOT NULL, "
-                        "StartTime TIME NOT NULL, "
-                        "EndTime TIME NOT NULL, "
+                        "IdPerson INTEGER , "
+                        "GrantPolicy INTEGER , "
+                        "StartTime TIME , "
+                        "EndTime TIME , "
                         "FOREIGN KEY(IdPerson) REFERENCES Person(IdPerson), "
                         "FOREIGN KEY(GrantPolicy) REFERENCES Policy(GrantPolicy))")
 
@@ -74,10 +76,10 @@ def createVehiclePolicyTable():
         cursor = connection.cursor()
         cursor.execute("CREATE TABLE IF NOT EXISTS VehiclePolicy("
                         "IdVehiclePolicy INTEGER PRIMARY KEY, "
-                        "IdVehicle INTEGER NOT NULL, "
-                        "GrantPolicy INTEGER NOT NULL, "
-                        "StartTime TIME NOT NULL, "
-                        "EndTime TIME NOT NULL, "
+                        "IdVehicle INTEGER, "
+                        "GrantPolicy INTEGER, "
+                        "StartTime TIME, "
+                        "EndTime TIME, "
                         "FOREIGN KEY(IdVehicle) REFERENCES Vehicle(IdVehicle))")
 
 
@@ -88,7 +90,7 @@ def createTransitHistoryTable():
                         "IdTransit INTEGER PRIMARY KEY, "
                         "IdPerson INTEGER, "
                         "IdVehicle INTEGER, "
-                        "TransitDate DATE NOT NULL, "
+                        "TransitDate DATE , "
                         "FOREIGN KEY(IdPerson) REFERENCES Person(IdPerson), "
                         "FOREIGN KEY(IdVehicle) REFERENCES Vehicle(IdVehicle))")
 
@@ -374,6 +376,18 @@ def createAllTables():
     createPersonPolicyTable()
     createVehiclePolicyTable()
     createTransitHistoryTable()
+
+
+def dropTables():
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("DROP TABLE Person")
+        cursor.execute("DROP TABLE Vehicle")
+        cursor.execute("DROP TABLE PersonVehicle")
+        cursor.execute("DROP TABLE Policy")
+        cursor.execute("DROP TABLE PersonPolicy")
+        cursor.execute("DROP TABLE VehiclePolicy")
 
 
 def findPlateInVehicles(plate):

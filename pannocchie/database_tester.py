@@ -3,6 +3,7 @@ import database_interactions as database
 import random
 import time
 
+database.dropTables()
 database.createAllTables()
 
 # database.insertRandomPeople()
@@ -33,5 +34,6 @@ database.createAllTables()
 
 # database.printVehicles(database.findAllVehicles())
 # print(database.selectPolicyFromVehicle("AA123BB", "12:30:00"))
+
 
 database.printPersons(database.findAllPersons())

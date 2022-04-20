@@ -34,11 +34,15 @@ database.createAllTables()
 
 # database.printVehicles(database.findAllVehicles())
 # print(database.selectPolicyFromVehicle("AA123BB", "12:30:00"))
-database.insertPolicy()
-print(database.findPolicy())
 
-database.insertRandomPeoples(10)
-database.insertRandomVehicles(10)
 
-database.printPersons(database.findAllPersons())
-database.printVehicles(database.findAllVehicles())
+# database.insertPolicy()
+# database.insertRandomPeoples(10)
+# database.insertRandomVehicles(10))
+
+# database.insertRandomPeoples(10)
+# database.insertPolicyToPeoples()
+# database.insertRandomVehicles(1)
+# database.insertPolicyToVehicles()
+print(database.findAllVehicles())
+print(database.findVehiclePolicy(1))

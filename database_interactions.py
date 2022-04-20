@@ -155,19 +155,31 @@ def insertRandomPeoples(number):
             cursor = connection.cursor()
             badge = str(uuid.uuid1())
             cursor.execute("INSERT INTO Person(Badge) VALUES (?)", (badge,))
-            id = findIdPersonFromBadge(badge)
-            randPolicy = random.randint(1,4)
-            cursor.execute("INSERT INTO PersonPolicy(IdPerson,GrantPolicy) VALUES(?,?)", (id,randPolicy,))
+
+
+def insertPolicyToPeoples():
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        for person in findAllPersons():
+            randPolicy = random.randint(1, 4)
+            cursor.execute("INSERT INTO PersonPolicy(IdPerson, GrantPolicy) VALUES (?, ?)", (person[0], randPolicy,))
+    
 
 def insertRandomVehicles(number):
     for i in range(number):
         with DatabaseConnection(DATABASE_NAME) as connection:
-            cursor = connection.cursor()            
-            plate = createRandomPlate()
-            cursor.execute("INSERT INTO Vehicle(Plate) VALUES (?)", (plate,))
-            id = findIdVehicleFromPlate(plate)
-            randPolicy = random.randint(1,4)
-            cursor.execute("INSERT INTO VehiclePolicy(IdVehicle,GrantPolicy) VALUES(?,?)", (id,randPolicy,))
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO Vehicle(Plate) VALUES (?)", (createRandomPlate(),))
+
+
+def insertPolicyToVehicles():
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        for vehicle in findAllVehicles():
+            randPolicy = random.randint(1, 4)
+            cursor.execute("INSERT INTO VehiclePolicy(IdVehicle, GrantPolicy) VALUES (?, ?)", (vehicle[0], randPolicy,))
 
 
 def updateVehicleOfPerson(idperson, idvehicle):
@@ -270,10 +282,9 @@ def extractRandomPlate():
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
 
-        cursor.execute("SELECT COUNT(*) FROM Vehicle")
-        numbersVehicle = int(cursor.fetchall()[0][0])
+        vehiclesNumber = findNumberOfVehicles()
 
-        randomIndex = random.randint(1, numbersVehicle)
+        randomIndex = random.randint(1, vehiclesNumber)
         cursor.execute("SELECT Plate FROM Vehicle AS V WHERE V.IdVehicle = ?", (randomIndex,))
         result = cursor.fetchall()
 
@@ -283,10 +294,9 @@ def extractRandomBadge():
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
 
-        cursor.execute("SELECT COUNT(*) FROM Person")
-        numbersPerson = int(cursor.fetchall()[0][0])
+        personsNumber = findNumberOfPeople()
 
-        randomIndex = random.randint(1, numbersPerson)
+        randomIndex = random.randint(1, personsNumber)
         cursor.execute("SELECT Badge FROM Person AS P WHERE P.IdPerson = ?", (randomIndex,))
         result = cursor.fetchall()
 
@@ -349,6 +359,20 @@ def deleteVehiclePolicy(idvehiclepolicy):
         cursor.execute("DELETE FROM VehiclePolicy WHERE 1 = ?", (idvehiclepolicy,))
 
 
+def deleteAllPersons():
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+        
+        cursor.execute("DELETE FROM Person")
+
+
+def deleteAllVehicles():
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+        
+        cursor.execute("DELETE FROM Vehicle")
+
+
 def findAllPersonVehicle():
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
@@ -369,20 +393,29 @@ def findAllTransits():
     return result
 
 
+def findNumberOfPeople():
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT COUNT(*) FROM Person")
+        result = int(cursor.fetchall()[0][0])
+
+    return result
+
+
+def findNumberOfVehicles():
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT COUNT(*) FROM Vehicle")
+        result = int(cursor.fetchall()[0][0])
+
+    return result
+
+
 
 ###################### METODI DI UTILITA' ######################
 def createAllTables():
-    with DatabaseConnection(DATABASE_NAME) as conn:
-        cursor = conn.cursor()
-        cursor.execute("DROP TABLE IF EXISTS {0}".format("Person"))
-        cursor.execute("DROP TABLE IF EXISTS {0}".format("Vehicle"))
-        cursor.execute("DROP TABLE IF EXISTS {0}".format("PersonVehicle"))
-        cursor.execute("DROP TABLE IF EXISTS {0}".format("PersonPolicy"))
-        cursor.execute("DROP TABLE IF EXISTS {0}".format("VehiclePolicy"))
-        cursor.execute("DROP TABLE IF EXISTS {0}".format("Policy"))
-        cursor.execute("DROP TABLE IF EXISTS {0}".format("TransitHistory"))
-        
-        
     createPersonTable()
     createVehicleTable()
     createPersonVehicleTable()
@@ -390,6 +423,18 @@ def createAllTables():
     createPersonPolicyTable()
     createVehiclePolicyTable()
     createTransitHistoryTable()
+
+
+def dropTables():
+    with DatabaseConnection(DATABASE_NAME) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("DROP TABLE Person")
+        cursor.execute("DROP TABLE Vehicle")
+        cursor.execute("DROP TABLE PersonVehicle")
+        cursor.execute("DROP TABLE Policy")
+        cursor.execute("DROP TABLE PersonPolicy")
+        cursor.execute("DROP TABLE VehiclePolicy")
 
 
 def findPlateInVehicles(plate):
