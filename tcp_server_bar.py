@@ -11,6 +11,13 @@ async def handleClient(reader,writer):
         while True:
             data = await reader.readline()
             print("signal received,opening gate")
+            break
+        
+        writer.write_eof()
+        await writer.drain()
+        writer.close()
+        await writer.wait_closed()
+    
     except KeyboardInterrupt:
         writer.write_eof()
         await writer.drain()

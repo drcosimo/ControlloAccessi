@@ -3,7 +3,7 @@ import database_interactions as database
 import random
 import time
 
-database.createAllTables()
+#database.createAllTables()
 
 
 # database.insertRandomPeople()
@@ -44,5 +44,8 @@ database.createAllTables()
 # database.insertPolicyToPeoples()
 # database.insertRandomVehicles(1)
 # database.insertPolicyToVehicles()
+database.generateDbTest(3)
 print(database.findAllVehicles())
-print(database.findVehiclePolicy(1))
+print(database.findAllPersons())
+print(database.findAllPersonVehicle())
+

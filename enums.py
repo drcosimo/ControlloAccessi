@@ -43,10 +43,10 @@ class DeviceType(Enum):
 
 class RequestType(Enum):
     POLICY = 1
-    FIND_PLATE = 3
-    FIND_BADGE = 4
-    FIND_PLATE_BADGE = 5
-    INSERT_TRANSIT_HISTORY = 6
+    FIND_PLATE = 2
+    FIND_BADGE = 3
+    FIND_PLATE_BADGE = 4
+    INSERT_TRANSIT_HISTORY = 5
 
 class LaneStatus(Enum):
     LANE_ACTIVE = 1

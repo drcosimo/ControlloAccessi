@@ -134,7 +134,7 @@ class TCPClient(TCPDevice):
                 # apertura connessione con il server
                 reader,writer = await asyncio.open_connection(self.ip,self.port)
                 # gestione comunicazione con il server
-                asyncio.create_task(handleClient(reader,writer))
+                await handleClient(reader,writer)
             # client callback handler
             async def handleClient(reader:asyncio.StreamReader,writer:asyncio.StreamWriter):
                 try:
@@ -233,7 +233,7 @@ class Connection():
         w.close()
         await w.wait_closed()
 
-    def dbRequest(self,reqType,reqArgs):
+    def dbRequest(self,reqType:RequestType,reqArgs):
         # richiesta grant badgeplate
         req = "{0}".format(reqType)
         for arg in reqArgs:

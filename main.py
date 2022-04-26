@@ -4,7 +4,7 @@ from classes import *
 from enums import *
 from gateFactory import *
 from reactivex import Observable
-from database_interactions import findAllVehicles,printVehicles,insertRandomVehicles,insertRandomPeoples
+from database_interactions import generateDbTest
 from lane_analyzer import TransitAnalyzer
 
 gateNord:Gate = None
@@ -15,10 +15,9 @@ laneAnalyzers = [TransitAnalyzer]
 
 
 async def main():
-    insertRandomPeoples(50)
-    
-    print("questi sono i veicoli:")
-    printVehicles(findAllVehicles())
+    # GENERAZIONE DATASET DI PROVA
+    generateDbTest(10)
+
     # creazione gate nord dalla classe factory
     gateNord = GateFactory.createGateNord()
     lane = gateNord.getLanes()[0]
@@ -27,9 +26,9 @@ async def main():
         print(device)
         observables.append(device.createObservable())
     laneObservable = reactivex.merge(*observables)
-    trans = TransitAnalyzer(Connection())
+    trans = TransitAnalyzer()
     laneObservable.subscribe(trans)
-
+    
     '''if gateNord != None:
         # per ogni lane del gate
         for index,lane in enumerate(gateNord.getLanes()):
@@ -48,7 +47,7 @@ async def main():
                 laneAnalyzers.append(TransitAnalyzer(Connection()))
                 # sottoscrivo un analyzer per ogni lane
                 laneObservables[index].subscribe(laneAnalyzers[index])
-            '''
+    '''
 if __name__ == "__main__":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     loop = asyncio.new_event_loop()

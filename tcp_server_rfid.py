@@ -7,11 +7,12 @@ async def main(port):
     server = await asyncio.start_server(handleClient,"127.0.0.1",10000 + int(port))
     await server.serve_forever()
     
-async def handleClient(reader,writer):
+async def handleClient(reader:asyncio.StreamReader,writer:asyncio.StreamWriter):
     try:
         while True:
-            await asyncio.sleep(rd.randint(5,15))
+            await asyncio.sleep(rd.randint(15,20))
             badge = extractRandomBadge()
+            print("badge detected")
             writer.write(badge.encode("utf-8"))
             await writer.drain()
     except KeyboardInterrupt:

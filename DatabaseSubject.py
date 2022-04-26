@@ -28,10 +28,11 @@ class DatabaseSubject(Subject,TCPDevice):
                 # type of request, and value associated
                 type,plate,badge,time = text.split(",")
                 
-                result = await self.dbRequest(type,plate,badge,time)
-
+                result = await self.dbRequest(int(type),plate,badge,time)
+                
+                evtType = "EventType.{0}".format(EventType(result).name)
                 # create event
-                evt = Event("{0},{1}".format(plate,badge),result,DeviceType.SERVER)
+                evt = Event("{0},{1}".format(plate,badge),evtType,DeviceType.SERVER)
                 print("submitting event {0}".format(evt.toString()))
                 observer.on_next(evt)
 
@@ -39,31 +40,33 @@ class DatabaseSubject(Subject,TCPDevice):
         return reactivex.create(on_subscription)
     
     async def dbRequest(self,type,plate,badge,time):
-        if type == RequestType.POLICY:
-            if plate == "None":
+        if type == RequestType.POLICY.value:
+            if plate != "None":
                 return selectPolicyFromVehicle(plate,time)
-            elif badge == "None":
+            elif badge != "None":
                 return selectPolicyFromPerson(badge,time)
         
-        elif type == RequestType.FIND_BADGE:
+        elif type == RequestType.FIND_BADGE.value:
             if findBadgeInPersons(badge):
                 return EventType.BADGE_OK
             else:
                 return EventType.NO_GRANT
         
-        elif type == RequestType.FIND_PLATE:
+        elif type == RequestType.FIND_PLATE.value:
             if findPlateInVehicles(plate):
                 return EventType.PLATE_OK
             else:
                 return EventType.NO_GRANT
         
-        elif type == RequestType.FIND_PLATE_BADGE:
+        elif type == RequestType.FIND_PLATE_BADGE.value:
             if findPlateAndBadge(plate,badge):
                 return EventType.BADGE_PLATE_OK
             else:
                 return EventType.NO_GRANT
         
-        elif type == RequestType.INSERT_TRANSIT_HISTORY:
+        elif type == RequestType.INSERT_TRANSIT_HISTORY.value:
             idV = findIdVehicleFromPlate(plate)
             idP = findIdPersonFromBadge(badge)
             insertTransitHistory(idP,idV,time)
+        
+        return "non entra da nessuna parte"

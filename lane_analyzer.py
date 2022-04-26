@@ -7,11 +7,11 @@ from enums import *
 from classes import Connection,Event
 
 class TransitAnalyzer(Subject):
-    def __init__(self, conn:Connection):
+    def __init__(self):
         self.actualPlate = None
         self.actualBadge = None
         self.transitState = TransitState.WAIT_FOR_TRANSIT
-        self.connections = conn
+        self.connections = Connection()
         self.startTimeTransit = None
         self.endTimeTransit = None
     
@@ -52,12 +52,11 @@ class TransitAnalyzer(Subject):
 
     
     def analyze(self, event:Event): # TODO: aggiungere il tipo all'event
-        print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
-
         # ----------------------------------------------------
         # waiting for transit q0
         # ----------------------------------------------------
         if self.transitState == TransitState.WAIT_FOR_TRANSIT:
+            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             # controllo tipo evento
             if event.eventType == EventType.HUMAN_ACTION:
                 self.transitState = TransitState.GRANT_OK
@@ -74,7 +73,7 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
         if self.transitState == TransitState.TRANSIT_STARTED:
             # TODO aggiungere ritardo
-
+            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             if event.eventType == EventType.HUMAN_ACTION:
                 self.transitState = TransitState.GRANT_OK
             # salvo anche il badge se è arrivato
@@ -92,11 +91,12 @@ class TransitAnalyzer(Subject):
         # grant request q2
         # ----------------------------------------------------
         if self.transitState == TransitState.GRANT_REQ:
+            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             if event.eventType == EventType.HUMAN_ACTION:
                 self.transitState = TransitState.GRANT_OK
             else:   
                 # richiesta al db
-                self.connections.dbRequest(RequestType.POLICY,[self.actualPlate,self.actualBadge,self.startTimeTransit])
+                self.connections.dbRequest(RequestType.POLICY.value,[self.actualPlate,self.actualBadge,self.startTimeTransit])
                 self.transitState = TransitState.WAIT_FOR_RESPONSE
         
         # ----------------------------------------------------
@@ -104,6 +104,7 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
        
         if self.transitState == TransitState.WAIT_FOR_RESPONSE:
+            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             if event.eventType == EventType.HUMAN_ACTION:
                 self.transitState = TransitState.GRANT_OK
             # no policy found
@@ -112,7 +113,7 @@ class TransitAnalyzer(Subject):
             elif (event.eventType == EventType.ONLY_PLATE_POLICY and event.value.strip(",")[0] == self.actualPlate) or (event.eventType == EventType.ONLY_BADGE_POLICY and event.value.strip(",")[1] == self.actualBadge):
                 # grant ok
                 self.transitState = TransitState.GRANT_OK
-            else:
+            elif (event.eventType == EventType.BADGE_PLATE_POLICY) or (event.eventType == EventType.ONLY_PLATE_POLICY and self.actualPlate is None) or (event.eventType == EventType.ONLY_BADGE_POLICY and self.actualBadge is None):
                 # richiesta accoppiata badge plate
                 if self.actualBadge != None and self.actualPlate != None:
                     self.transitState = TransitState.GRANT_REQ_BADGEPLATE
@@ -124,6 +125,7 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
        
         if self.transitState == TransitState.WAIT_FOR_DATA:
+            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             # TODO aggiungere timeout
             if event.eventType == EventType.HUMAN_ACTION:
                 self.transitState = TransitState.GRANT_OK    
@@ -139,11 +141,12 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
        
         if self.transitState == TransitState.GRANT_REQ_BADGEPLATE:
+            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             if event.eventType == EventType.HUMAN_ACTION:
                 self.transitState = TransitState.GRANT_OK    
             else:
                 # richiesta grant badgeplate
-                self.connections.dbRequest(RequestType.FIND_PLATE_BADGE,[self.actualPlate,self.actualBadge,self.startTimeTransit])
+                self.connections.dbRequest(RequestType.FIND_PLATE_BADGE.value,[self.actualPlate,self.actualBadge,self.startTimeTransit])
                 self.transitState = TransitState.GRANT_RES_BADGEPLATE
             
         # ----------------------------------------------------
@@ -151,6 +154,7 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
        
         if self.transitState == TransitState.GRANT_RES_BADGEPLATE:
+            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             if event.eventType == EventType.BADGE_PLATE_OK or event.eventType == EventType.HUMAN_ACTION:
                 self.transitState = TransitState.GRANT_OK
             elif event.eventType == EventType.NO_GRANT:
@@ -160,6 +164,7 @@ class TransitAnalyzer(Subject):
         # accesso garantito,apertura sbarra
         # ----------------------------------------------------
         if self.transitState == TransitState.GRANT_OK:
+            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             # connessione alla sbarra
             asyncio.create_task(self.connections.connectToBar())
             # end transit
@@ -169,6 +174,7 @@ class TransitAnalyzer(Subject):
         # accesso non consentito
         # ----------------------------------------------------
         if self.transitState == TransitState.GRANT_REFUSED:
+            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             if event.eventType == EventType.HUMAN_ACTION:
                 self.transitState = TransitState.GRANT_OK
             else:
@@ -178,10 +184,11 @@ class TransitAnalyzer(Subject):
         # fine transito, ritorno stato iniziale
         # ----------------------------------------------------
         if self.transitState == TransitState.END_TRANSIT:
+            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             self.endTimeTransit = datetime.now()
             # inserimento transit history
             args = [self.actualPlate,self.actualBadge,self.endTimeTransit]
-            self.connections.dbRequest(RequestType.INSERT_TRANSIT_HISTORY,args)
+            self.connections.dbRequest(RequestType.INSERT_TRANSIT_HISTORY.value,args)
             self.cleanAnalyzer()
 
     def cleanAnalyzer(self):

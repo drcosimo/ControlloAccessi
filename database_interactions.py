@@ -6,6 +6,8 @@ from database_connection import DatabaseConnection
 from custom_errors import NotUniqueException
 import uuid
 
+from enums import EventType, RequestType
+
 
 DATABASE_NAME = "database.db"
 
@@ -14,6 +16,15 @@ Metodi utilizzati per gestire le interazioni con il database
 """
 
 ###################### METODI PER LA CREAZIONE DEL DB ######################
+def generateDbTest(n):
+    dropTables()
+    createAllTables()
+
+    insertRandomPeoples(n)
+    insertRandomVehicles(n)
+    insertPolicyToVehicles()
+    insertPolicyToPeoples()
+    generateRandomVehiclePerson()
 
 def createPersonTable():
     with DatabaseConnection(DATABASE_NAME) as connection:
@@ -188,6 +199,12 @@ def updateVehicleOfPerson(idperson, idvehicle):
 
         cursor.execute("UPDATE PersonVehicle SET IdVehicle = ? WHERE IdPerson = ?", (idvehicle, idperson,))
 
+def generateRandomVehiclePerson():
+    people = findAllPersons()
+    vehicles = findAllVehicles()
+    
+    for i in range(findNumberOfPeople()):
+        insertPersonVehicle(people[i][0],vehicles[i][0])
 
 ###################### METODI PER LE INTERROGAZIONI ######################
 def findIdPersonFromBadge(badge):
@@ -228,17 +245,20 @@ def selectPolicyFromPerson(badge, actualTime):
 
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
+        '''"AND ? BETWEEN pp.StartTime AND pp.EndTime"'''
 
         cursor.execute("SELECT p.GrantPolicy FROM Policy AS p INNER JOIN PersonPolicy AS pp "
-                        "ON pp.GrantPolicy = p.GrantPolicy WHERE pp.IdPerson = ? "
-                        "AND ? BETWEEN pp.StartTime AND pp.EndTime", (idperson,actualTime,))
+                        "ON pp.GrantPolicy = p.GrantPolicy WHERE pp.IdPerson = ?", (idperson,))
 
         result = cursor.fetchall()
 
     if len(result) > 1:
         raise NotUniqueException("La policy cercata non è unica")
 
-    return int(result[0][0])
+    if len(result) > 0: 
+        return int(result[0][0])
+    else:
+        return EventType.NO_POLICY.value
         
 
 def selectPolicyFromVehicle(plate, actualTime):
@@ -247,17 +267,19 @@ def selectPolicyFromVehicle(plate, actualTime):
 
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
-
+        '''"AND ? BETWEEN vp.StartTime AND vp.EndTime"'''
         cursor.execute("SELECT p.GrantPolicy FROM Policy AS p INNER JOIN VehiclePolicy AS vp "
-                        "ON vp.GrantPolicy = p.GrantPolicy WHERE vp.IdVehicle = ? "
-                        "AND ? BETWEEN vp.StartTime AND vp.EndTime", (idvehicle,actualTime,))
+                        "ON vp.GrantPolicy = p.GrantPolicy WHERE vp.IdVehicle = ? ", (idvehicle,))
         
         result = cursor.fetchall()
 
     if len(result) > 1:
         raise NotUniqueException("La policy cercata non è unica")
 
-    return int(result[0][0])
+    if len(result) > 0: 
+        return int(result[0][0])
+    else:
+        return EventType.NO_POLICY.value
 
 
 def findPlateAndBadge(plate, badge):
