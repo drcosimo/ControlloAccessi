@@ -43,9 +43,12 @@ import time
 # database.insertRandomPeoples(10)
 # database.insertPolicyToPeoples()
 # database.insertRandomVehicles(1)
-# database.insertPolicyToVehicles()
-database.generateDbTest(3)
-print(database.findAllVehicles())
-print(database.findAllPersons())
-print(database.findAllPersonVehicle())
+# # database.insertPolicyToVehicles()
+# database.generateDbTest(3)
+# print(database.findAllVehicles())
+# print(database.findAllPersons())
+# print(database.findAllPersonVehicle())
+
+for i in range(10):
+    print(random.randint(1, 3))
 

@@ -20,6 +20,7 @@ def generateDbTest(n):
     dropTables()
     createAllTables()
 
+    insertPolicy()
     insertRandomPeoples(n)
     insertRandomVehicles(n)
     insertPolicyToVehicles()
@@ -155,9 +156,16 @@ def insertVehiclePolicy(idvehicle, grantpolicy, start, end):
 def insertTransitHistory(idPerson, idVehicle, date):
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
-
-        cursor.execute("INSERT INTO TransitHistory (IdPerson, IdVehicle, TransitDate) "
-                        "VALUES (?, ?, ?)", (idPerson, idVehicle, date,))
+        
+        if idPerson is None: 
+            cursor.execute("INSERT INTO TransitHistory (IdVehicle, TransitDate) "
+                            "VALUES (?, ?)", (idVehicle, date,))
+        elif idVehicle is None:
+            cursor.execute("INSERT INTO TransitHistory (IdPerson, TransitDate) "
+                            "VALUES (?, ?)", (idPerson, date,))
+        else:
+            cursor.execute("INSERT INTO TransitHistory (IdPerson, IdVehicle, TransitDate) "
+                            "VALUES (?, ?, ?)", (idPerson, idVehicle, date,))
 
 
 def insertRandomPeoples(number):
@@ -173,7 +181,7 @@ def insertPolicyToPeoples():
         cursor = connection.cursor()
 
         for person in findAllPersons():
-            randPolicy = random.randint(1, 4)
+            randPolicy = random.randint(1, 3)
             cursor.execute("INSERT INTO PersonPolicy(IdPerson, GrantPolicy) VALUES (?, ?)", (person[0], randPolicy,))
     
 
@@ -189,7 +197,7 @@ def insertPolicyToVehicles():
         cursor = connection.cursor()
 
         for vehicle in findAllVehicles():
-            randPolicy = random.randint(1, 4)
+            randPolicy = random.randint(1, 3)
             cursor.execute("INSERT INTO VehiclePolicy(IdVehicle, GrantPolicy) VALUES (?, ?)", (vehicle[0], randPolicy,))
 
 
@@ -457,6 +465,7 @@ def dropTables():
         cursor.execute("DROP TABLE Policy")
         cursor.execute("DROP TABLE PersonPolicy")
         cursor.execute("DROP TABLE VehiclePolicy")
+        cursor.execute("DROP TABLE TransitHistory")
 
 
 def findPlateInVehicles(plate):

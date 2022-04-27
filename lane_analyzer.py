@@ -96,7 +96,7 @@ class TransitAnalyzer(Subject):
                 self.transitState = TransitState.GRANT_OK
             else:   
                 # richiesta al db
-                self.connections.dbRequest(RequestType.POLICY.value,[self.actualPlate,self.actualBadge,self.startTimeTransit])
+                self.connections.dbRequest(RequestType.POLICY,[self.actualPlate,self.actualBadge,self.startTimeTransit])
                 self.transitState = TransitState.WAIT_FOR_RESPONSE
         
         # ----------------------------------------------------
@@ -110,7 +110,7 @@ class TransitAnalyzer(Subject):
             # no policy found
             elif event.eventType == EventType.NO_POLICY:
                 self.transitState = TransitState.GRANT_REFUSED
-            elif (event.eventType == EventType.ONLY_PLATE_POLICY and event.value.strip(",")[0] == self.actualPlate) or (event.eventType == EventType.ONLY_BADGE_POLICY and event.value.strip(",")[1] == self.actualBadge):
+            elif (event.eventType == EventType.ONLY_PLATE_POLICY and event.value.split(",")[0] == self.actualPlate) or (event.eventType == EventType.ONLY_BADGE_POLICY and event.value.split(",")[1] == self.actualBadge):
                 # grant ok
                 self.transitState = TransitState.GRANT_OK
             elif (event.eventType == EventType.BADGE_PLATE_POLICY) or (event.eventType == EventType.ONLY_PLATE_POLICY and self.actualPlate is None) or (event.eventType == EventType.ONLY_BADGE_POLICY and self.actualBadge is None):
@@ -146,7 +146,7 @@ class TransitAnalyzer(Subject):
                 self.transitState = TransitState.GRANT_OK    
             else:
                 # richiesta grant badgeplate
-                self.connections.dbRequest(RequestType.FIND_PLATE_BADGE.value,[self.actualPlate,self.actualBadge,self.startTimeTransit])
+                self.connections.dbRequest(RequestType.FIND_PLATE_BADGE,[self.actualPlate,self.actualBadge,self.startTimeTransit])
                 self.transitState = TransitState.GRANT_RES_BADGEPLATE
             
         # ----------------------------------------------------
@@ -167,6 +167,12 @@ class TransitAnalyzer(Subject):
             print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             # connessione alla sbarra
             asyncio.create_task(self.connections.connectToBar())
+            # inserimento transit history con almeno un dato
+            if self.actualBadge is not None or self.actualPlate is not None:
+                self.endTimeTransit = datetime.now()
+                # inserimento transit history
+                args = [self.actualPlate,self.actualBadge,self.endTimeTransit]
+                self.connections.dbRequest(RequestType.INSERT_TRANSIT_HISTORY,args)
             # end transit
             self.transitState = TransitState.END_TRANSIT
         
@@ -185,10 +191,6 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
         if self.transitState == TransitState.END_TRANSIT:
             print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
-            self.endTimeTransit = datetime.now()
-            # inserimento transit history
-            args = [self.actualPlate,self.actualBadge,self.endTimeTransit]
-            self.connections.dbRequest(RequestType.INSERT_TRANSIT_HISTORY.value,args)
             self.cleanAnalyzer()
 
     def cleanAnalyzer(self):

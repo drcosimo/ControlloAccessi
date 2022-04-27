@@ -1,12 +1,12 @@
-from enum import Enum
+from enum import IntEnum
 
-class GateName(Enum):
+class GateName(IntEnum):
     GATE_NORD = 1
     GATE_SUD = 2
     GATE_EST = 3
     GATE_OVEST = 4
 
-class EventType(Enum):
+class EventType(IntEnum):
     ONLY_BADGE_POLICY = 1
     ONLY_PLATE_POLICY = 2
     BADGE_PLATE_POLICY = 3
@@ -20,7 +20,7 @@ class EventType(Enum):
     PLATE_OK = 10
     NO_GRANT = 11
 
-class TransitState(Enum):
+class TransitState(IntEnum):
     WAIT_FOR_TRANSIT = 1
     TRANSIT_STARTED = 2
     GRANT_REQ = 3
@@ -33,7 +33,7 @@ class TransitState(Enum):
     WAIT_FOR_DATA = 10
     GRANT_REFUSED = 11
 
-class DeviceType(Enum):
+class DeviceType(IntEnum):
     FRONT_CAM = 1
     REAR_CAM = 2
     RFID = 3
@@ -41,13 +41,13 @@ class DeviceType(Enum):
     SERVER = 5
     BAR = 6
 
-class RequestType(Enum):
+class RequestType(IntEnum):
     POLICY = 1
     FIND_PLATE = 2
     FIND_BADGE = 3
     FIND_PLATE_BADGE = 4
     INSERT_TRANSIT_HISTORY = 5
 
-class LaneStatus(Enum):
+class LaneStatus(IntEnum):
     LANE_ACTIVE = 1
     LANE_NOT_ACTIVE = 2

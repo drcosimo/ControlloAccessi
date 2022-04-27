@@ -1,4 +1,5 @@
 import asyncio
+from urllib.request import Request
 from reactivex import Observable, Subject
 from datetime import datetime, time
 import reactivex
@@ -30,43 +31,46 @@ class DatabaseSubject(Subject,TCPDevice):
                 
                 result = await self.dbRequest(int(type),plate,badge,time)
                 
-                evtType = "EventType.{0}".format(EventType(result).name)
-                # create event
-                evt = Event("{0},{1}".format(plate,badge),evtType,DeviceType.SERVER)
-                print("submitting event {0}".format(evt.toString()))
-                observer.on_next(evt)
+                if result is not None:
+                    # create event
+                    evt = Event("{0},{1}".format(plate,badge),result,DeviceType.SERVER)
+                    print("submitting event {0}".format(evt.toString()))
+                    observer.on_next(evt)
 
             asyncio.create_task(connect())
         return reactivex.create(on_subscription)
     
-    async def dbRequest(self,type,plate,badge,time):
-        if type == RequestType.POLICY.value:
+    async def dbRequest(self,tipo,plate,badge,time):
+        print("-----------------")
+        print(f"valore type: {tipo}, tipo: {type(tipo)}")
+        print(f"tipo RequestType: {type(RequestType.POLICY)}")
+        print("-----------------")
+        if tipo == RequestType.POLICY:
             if plate != "None":
                 return selectPolicyFromVehicle(plate,time)
             elif badge != "None":
                 return selectPolicyFromPerson(badge,time)
         
-        elif type == RequestType.FIND_BADGE.value:
+        elif tipo == RequestType.FIND_BADGE:
             if findBadgeInPersons(badge):
                 return EventType.BADGE_OK
             else:
                 return EventType.NO_GRANT
         
-        elif type == RequestType.FIND_PLATE.value:
+        elif tipo == RequestType.FIND_PLATE:
             if findPlateInVehicles(plate):
                 return EventType.PLATE_OK
             else:
                 return EventType.NO_GRANT
         
-        elif type == RequestType.FIND_PLATE_BADGE.value:
+        elif tipo == RequestType.FIND_PLATE_BADGE:
             if findPlateAndBadge(plate,badge):
                 return EventType.BADGE_PLATE_OK
             else:
                 return EventType.NO_GRANT
         
-        elif type == RequestType.INSERT_TRANSIT_HISTORY.value:
+        elif tipo == RequestType.INSERT_TRANSIT_HISTORY:
             idV = findIdVehicleFromPlate(plate)
             idP = findIdPersonFromBadge(badge)
             insertTransitHistory(idP,idV,time)
-        
-        return "non entra da nessuna parte"
+            return None
