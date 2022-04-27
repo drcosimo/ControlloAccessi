@@ -122,7 +122,6 @@ class TCPServer(TCPDevice):
         return reactivex.create(on_subscription)
 
 class TCPClient(TCPDevice):
-    retry = 1
 
     def __init__(self, ip, port, eventType: EventType, deviceType: DeviceType, lane: Lane) -> None:
         super().__init__(ip, port, eventType, deviceType, lane)
@@ -133,6 +132,10 @@ class TCPClient(TCPDevice):
             async def connect(self):
                 # apertura connessione con il server
                 reader,writer = await asyncio.open_connection(self.ip,self.port)
+                # gestione comunicazione con il server
+                await handleClient(reader,writer)
+            # client callback handler
+            async def handleClient(reader:asyncio.StreamReader,writer:asyncio.StreamWriter):
                 try:
                     peer = writer.get_extra_info("peername")
                     print("({0},{1}) client, connected to {2}".format(self.ip,self.port,peer))
@@ -145,7 +148,7 @@ class TCPClient(TCPDevice):
                         data = await reader.read(1024)
                         # decodifica dato
                         value = data.decode("utf-8")
-                        print(f"ho ricevuto {value}")
+
                         # creazione evento 
                         event = Event(value,self.eventType,self.deviceType)
                         # passo l'evento alla funzione on_next dell'observer
@@ -161,12 +164,6 @@ class TCPClient(TCPDevice):
                     print("({0},{1}) client, connection with {2} interrupted".format(self.ip,self.port,peer))
                     # passo l'errore all'observer
                     observer.on_error(err)
-                # # gestione comunicazione con il server
-                # await handleClient(reader,writer)
-            # client callback handler
-#            async def handleClient(reader:asyncio.StreamReader,writer:asyncio.StreamWriter):
-
-
             # creazione task della funzione connect
             asyncio.create_task(connect(self))
         # creo un osservabile a partire dalla funzione che definisce la sorgente dei dati

@@ -146,7 +146,8 @@ class TransitAnalyzer(Subject):
                 self.transitState = TransitState.GRANT_OK    
             else:
                 # richiesta grant badgeplate
-                self.connections.dbRequest(RequestType.FIND_PLATE_BADGE,[self.actualPlate,self.actualBadge,self.startTimeTransit])
+                args = [self.actualPlate,self.actualBadge,self.startTimeTransit]
+                self.connections.dbRequest(RequestType.FIND_PLATE_BADGE,args)
                 self.transitState = TransitState.GRANT_RES_BADGEPLATE
             
         # ----------------------------------------------------
@@ -168,7 +169,7 @@ class TransitAnalyzer(Subject):
             # connessione alla sbarra
             asyncio.create_task(self.connections.connectToBar())
             # inserimento transit history con almeno un dato
-            if self.actualBadge is not None or self.actualPlate is not None:
+            if self.actualBadge != None or self.actualPlate != None:
                 self.endTimeTransit = datetime.now()
                 # inserimento transit history
                 args = [self.actualPlate,self.actualBadge,self.endTimeTransit]

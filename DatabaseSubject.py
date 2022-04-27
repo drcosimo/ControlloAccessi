@@ -20,7 +20,7 @@ class DatabaseSubject(Subject,TCPDevice):
 
             async def handleClient(reader:asyncio.StreamReader,writer:asyncio.StreamWriter):
                 peer = writer.get_extra_info("peername")
-                data = await reader.readline()
+                data = await reader.read(1024)
                 text = data.decode(encoding="utf-8")
                 # one time request, closing connection
                 writer.close()
@@ -41,10 +41,6 @@ class DatabaseSubject(Subject,TCPDevice):
         return reactivex.create(on_subscription)
     
     async def dbRequest(self,tipo,plate,badge,time):
-        print("-----------------")
-        print(f"valore type: {tipo}, tipo: {type(tipo)}")
-        print(f"tipo RequestType: {type(RequestType.POLICY)}")
-        print("-----------------")
         if tipo == RequestType.POLICY:
             if plate != "None":
                 return selectPolicyFromVehicle(plate,time)

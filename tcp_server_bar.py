@@ -8,10 +8,8 @@ async def main(port):
     
 async def handleClient(reader,writer):
     try:
-        while True:
-            data = await reader.readline()
-            print("signal received,opening gate")
-            break
+        data = await reader.read(1024)
+        print("signal received,opening gate")
         
         writer.write_eof()
         await writer.drain()
