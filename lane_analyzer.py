@@ -62,13 +62,15 @@ class TransitAnalyzer(Subject):
         # waiting for transit q0
         # ----------------------------------------------------
         if self.transitState == TransitState.WAIT_FOR_TRANSIT:
-
             # controllo tipo evento
             if event.eventType == EventType.HUMAN_ACTION:
+                self.emettiLogger(event)
                 self.transitState = TransitState.GRANT_OK
             elif event.eventType == EventType.PLATE:
+                self.emettiLogger(event)
                 self.actualPlate = event.value
             elif event.eventType == EventType.BADGE:
+                self.emettiLogger(event)
                 self.actualBadge = event.value
             
             # passo al secondo stato
@@ -80,6 +82,7 @@ class TransitAnalyzer(Subject):
         if self.transitState == TransitState.TRANSIT_STARTED:
             # TODO aggiungere ritardo
             if event.eventType == EventType.HUMAN_ACTION:
+                self.emettiLogger(event)
                 self.transitState = TransitState.GRANT_OK
             # salvo anche il badge se è arrivato
             elif event.eventType == EventType.BADGE and self.actualPlate != None:
@@ -97,6 +100,7 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
         if self.transitState == TransitState.GRANT_REQ:
             if event.eventType == EventType.HUMAN_ACTION:
+                self.emettiLogger(event)
                 self.transitState = TransitState.GRANT_OK
             else:   
                 # richiesta al db
@@ -112,8 +116,10 @@ class TransitAnalyzer(Subject):
                 self.transitState = TransitState.GRANT_OK
             # no policy found
             elif event.eventType == EventType.NO_POLICY:
+                self.emettiLogger(event)
                 self.transitState = TransitState.GRANT_REFUSED
             elif (event.eventType == EventType.ONLY_PLATE_POLICY and event.value.split(",")[0] == self.actualPlate) or (event.eventType == EventType.ONLY_BADGE_POLICY and event.value.split(",")[1] == self.actualBadge):
+                self.emettiLogger(event)
                 # grant ok
                 self.transitState = TransitState.GRANT_OK
             elif (event.eventType == EventType.BADGE_PLATE_POLICY) or (event.eventType == EventType.ONLY_PLATE_POLICY and self.actualPlate is None) or (event.eventType == EventType.ONLY_BADGE_POLICY and self.actualBadge is None):
@@ -130,6 +136,7 @@ class TransitAnalyzer(Subject):
         if self.transitState == TransitState.WAIT_FOR_DATA:
             # TODO aggiungere timeout
             if event.eventType == EventType.HUMAN_ACTION:
+                self.emettiLogger(event)
                 self.transitState = TransitState.GRANT_OK    
             elif self.actualPlate != None and event.eventType == EventType.BADGE:
                 self.actualBadge = event.value
@@ -144,6 +151,7 @@ class TransitAnalyzer(Subject):
        
         if self.transitState == TransitState.GRANT_REQ_BADGEPLATE:
             if event.eventType == EventType.HUMAN_ACTION:
+                self.emettiLogger(event)
                 self.transitState = TransitState.GRANT_OK    
             else:
                 # richiesta grant badgeplate
@@ -157,6 +165,7 @@ class TransitAnalyzer(Subject):
        
         if self.transitState == TransitState.GRANT_RES_BADGEPLATE:
             if event.eventType == EventType.BADGE_PLATE_OK or event.eventType == EventType.HUMAN_ACTION:
+                self.emettiLogger(event)
                 self.transitState = TransitState.GRANT_OK
             elif event.eventType == EventType.NO_GRANT:
                 self.transitState = TransitState.GRANT_REFUSED
@@ -181,6 +190,7 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
         if self.transitState == TransitState.GRANT_REFUSED:
             if event.eventType == EventType.HUMAN_ACTION:
+                self.emettiLogger(event)
                 self.transitState = TransitState.GRANT_OK
             else:
                 self.transitState = TransitState.END_TRANSIT
@@ -189,6 +199,7 @@ class TransitAnalyzer(Subject):
         # fine transito, ritorno stato iniziale
         # ----------------------------------------------------
         if self.transitState == TransitState.END_TRANSIT:
+            self.emettiLogger(None)
             self.cleanAnalyzer()
 
     def cleanAnalyzer(self):

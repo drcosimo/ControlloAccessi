@@ -1,77 +1,38 @@
-28-04-2022 12:45:17 INFO     6	40141795-c6e0-11ec-8cd0-e4b31807c5aa	3
-28-04-2022 12:45:17 INFO     1	None,40141795-c6e0-11ec-8cd0-e4b31807c5aa	5
-28-04-2022 12:45:17 INFO     5	SI867QY	1
-28-04-2022 12:45:17 INFO     2	SI867QY,None	5
-28-04-2022 12:45:18 INFO     5	AC456TJ	2
-28-04-2022 12:45:18 INFO     2	AC456TJ,None	5
-28-04-2022 12:45:28 INFO     5	KA879AX	1
-28-04-2022 12:45:28 INFO     3	KA879AX,None	5
-28-04-2022 12:45:31 INFO     5	HV485MT	2
-28-04-2022 12:45:37 INFO     6	4015a0fe-c6e0-11ec-b8ca-e4b31807c5aa	3
-28-04-2022 12:45:37 INFO     11	KA879AX,4015a0fe-c6e0-11ec-b8ca-e4b31807c5aa	5
-28-04-2022 12:45:38 INFO     7	OPEN_GATE	4
-28-04-2022 12:45:41 INFO     5	LT800KC	1
-28-04-2022 12:45:41 INFO     3	LT800KC,None	5
-28-04-2022 12:45:42 INFO     5	RJ915SE	2
-28-04-2022 12:45:52 INFO     5	SI867QY	1
-28-04-2022 12:45:55 INFO     5	SI867QY	2
-28-04-2022 12:45:56 INFO     6	4011045a-c6e0-11ec-ba55-e4b31807c5aa	3
-28-04-2022 12:45:56 INFO     11	LT800KC,4011045a-c6e0-11ec-ba55-e4b31807c5aa	5
-28-04-2022 12:46:03 INFO     5	LT800KC	1
-28-04-2022 12:46:03 INFO     3	LT800KC,None	5
-28-04-2022 12:46:06 INFO     5	XH054ZT	2
-28-04-2022 12:46:11 INFO     6	401bcf5b-c6e0-11ec-b7b9-e4b31807c5aa	3
-28-04-2022 12:46:11 INFO     8	LT800KC,401bcf5b-c6e0-11ec-b7b9-e4b31807c5aa	5
-28-04-2022 12:46:15 INFO     5	SX550LW	1
-28-04-2022 12:46:15 INFO     2	SX550LW,None	5
-28-04-2022 12:46:18 INFO     7	OPEN_GATE	4
-28-04-2022 12:46:19 INFO     5	SI867QY	2
-28-04-2022 12:46:19 INFO     2	SI867QY,None	5
-28-04-2022 12:46:29 INFO     6	401a7363-c6e0-11ec-92e1-e4b31807c5aa	3
-28-04-2022 12:46:29 INFO     2	None,401a7363-c6e0-11ec-92e1-e4b31807c5aa	5
-28-04-2022 12:46:30 INFO     5	LT800KC	1
-28-04-2022 12:46:30 INFO     11	LT800KC,401a7363-c6e0-11ec-92e1-e4b31807c5aa	5
-28-04-2022 12:46:30 INFO     5	SI867QY	2
-28-04-2022 12:46:30 INFO     2	SI867QY,None	5
-28-04-2022 12:46:42 INFO     5	XH054ZT	1
-28-04-2022 12:46:42 INFO     3	XH054ZT,None	5
-28-04-2022 12:46:44 INFO     5	NQ954XA	2
-28-04-2022 12:46:45 INFO     6	40110459-c6e0-11ec-96b2-e4b31807c5aa	3
-28-04-2022 12:46:45 INFO     8	XH054ZT,40110459-c6e0-11ec-96b2-e4b31807c5aa	5
-28-04-2022 12:46:48 INFO     7	OPEN_GATE	4
-28-04-2022 12:46:53 INFO     5	SI867QY	1
-28-04-2022 12:46:53 INFO     2	SI867QY,None	5
-28-04-2022 12:46:55 INFO     5	LT800KC	2
-28-04-2022 12:46:55 INFO     3	LT800KC,None	5
-28-04-2022 12:47:00 INFO     6	40172748-c6e0-11ec-8706-e4b31807c5aa	3
-28-04-2022 12:47:00 INFO     11	LT800KC,40172748-c6e0-11ec-8706-e4b31807c5aa	5
-28-04-2022 12:47:03 INFO     5	KA879AX	1
-28-04-2022 12:47:03 INFO     3	KA879AX,None	5
-28-04-2022 12:47:06 INFO     5	AC456TJ	2
-28-04-2022 12:47:13 INFO     5	SX550LW	1
-28-04-2022 12:47:18 INFO     5	NQ954XA	2
-28-04-2022 12:47:19 INFO     6	4015a0fd-c6e0-11ec-abce-e4b31807c5aa	3
-28-04-2022 12:47:19 INFO     11	KA879AX,4015a0fd-c6e0-11ec-abce-e4b31807c5aa	5
-28-04-2022 12:47:21 INFO     7	OPEN_GATE	4
-28-04-2022 12:47:28 INFO     5	RJ915SE	1
-28-04-2022 12:47:28 INFO     3	RJ915SE,None	5
-28-04-2022 12:47:30 INFO     5	XH054ZT	2
-28-04-2022 12:47:37 INFO     6	401a7363-c6e0-11ec-92e1-e4b31807c5aa	3
-28-04-2022 12:47:37 INFO     11	RJ915SE,401a7363-c6e0-11ec-92e1-e4b31807c5aa	5
-28-04-2022 12:47:41 INFO     5	AC456TJ	1
-28-04-2022 12:47:41 INFO     2	AC456TJ,None	5
-28-04-2022 12:47:41 INFO     5	EO234HG	2
-28-04-2022 12:47:41 INFO     3	EO234HG,None	5
-28-04-2022 12:47:52 INFO     6	401bcf5b-c6e0-11ec-b7b9-e4b31807c5aa	3
-28-04-2022 12:47:52 INFO     11	EO234HG,401bcf5b-c6e0-11ec-b7b9-e4b31807c5aa	5
-28-04-2022 12:47:53 INFO     5	RJ915SE	1
-28-04-2022 12:47:53 INFO     3	RJ915SE,None	5
-28-04-2022 12:47:56 INFO     5	XH054ZT	2
-28-04-2022 12:48:01 INFO     7	OPEN_GATE	4
-28-04-2022 12:48:05 INFO     5	KA879AX	1
-28-04-2022 12:48:05 INFO     3	KA879AX,None	5
-28-04-2022 12:48:09 INFO     6	401bcf5b-c6e0-11ec-b7b9-e4b31807c5aa	3
-28-04-2022 12:48:09 INFO     11	KA879AX,401bcf5b-c6e0-11ec-b7b9-e4b31807c5aa	5
-28-04-2022 12:48:09 INFO     5	LT800KC	2
-28-04-2022 12:48:09 INFO     3	LT800KC,None	5
-28-04-2022 12:48:19 INFO     5	XH054ZT	1
+28-04-2022 14:52:19 INFO     TRANSIT_STARTED_FROM_PLATE	['ZM970EO']	FROM FRONT_CAM
+28-04-2022 14:52:19 INFO     TRANSIT_STARTED_FROM_BADGE	['02328d06-c6f2-11ec-8ffc-e4b31807c5aa']	RFID
+28-04-2022 14:52:19 INFO     ACCESS_GRANTED TO [plate,badge]
+
+28-04-2022 14:52:19 INFO     ACCESS_REFUSED TO [plate,badge]
+28-04-2022 14:52:19 INFO     TRANSIT_ENDED 
+
+28-04-2022 14:52:19 INFO     manual_open_gate
+28-04-2022 15:21:25 ERROR    Task exception was never retrieved
+future: <Task finished name='Task-7' coro=<TransitAnalyzer.createObservable.<locals>.on_subscription.<locals>.log() done, defined at C:\Users\UTENTE\Documents\python\reactive\Controllo_Accessi\lane_analyzer.py:24> exception=AttributeError("'Logger' object has no attribute 'is_stopped'")>
+Traceback (most recent call last):
+  File "C:\Users\UTENTE\Documents\python\reactive\Controllo_Accessi\lane_analyzer.py", line 33, in log
+    observer.on_next(self.logObject)
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\observer\autodetachobserver.py", line 28, in on_next
+    self._on_next(value)
+  File "C:\Users\UTENTE\Documents\python\reactive\Controllo_Accessi\logger.py", line 39, in on_next
+    logging.info(self.formatEvent(evento))
+TypeError: Logger.formatEvent() takes 1 positional argument but 2 were given
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\UTENTE\Documents\python\reactive\Controllo_Accessi\lane_analyzer.py", line 35, in log
+    observer.on_error(err)
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\observer\autodetachobserver.py", line 36, in on_error
+    self._on_error(error)
+  File "C:\Users\UTENTE\Documents\python\reactive\Controllo_Accessi\logger.py", line 46, in on_error
+    return super().on_error(error)
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\observer\observer.py", line 54, in on_error
+    if not self.is_stopped:
+AttributeError: 'Logger' object has no attribute 'is_stopped'
+28-04-2022 15:22:30 INFO     TRANSIT_STARTED_FROM_PLATE	LQ147BP	 READ BYFRONT_CAM
+28-04-2022 15:22:31 INFO     TRANSIT_STARTED_FROM_BADGE	3929ffa4-c6f6-11ec-aad2-e4b31807c5aa	 READ BYRFID
+28-04-2022 15:22:32 INFO     TRANSIT_STARTED_FROM_PLATE	RR867EO	 READ BYREAR_CAM
+28-04-2022 15:22:32 INFO     ACCESS_GRANTED TO	RR867EO,None
+28-04-2022 15:22:41 INFO     TRANSIT_STARTED_FROM_PLATE	NN500RZ	 READ BYFRONT_CAM
+28-04-2022 15:22:45 INFO     TRANSIT_STARTED_FROM_PLATE	LC060KY	 READ BYREAR_CAM
+28-04-2022 15:22:47 INFO     TRANSIT_STARTED_FROM_BADGE	3928cd3d-c6f6-11ec-8864-e4b31807c5aa	 READ BYRFID
