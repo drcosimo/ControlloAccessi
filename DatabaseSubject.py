@@ -1,4 +1,5 @@
 import asyncio
+import sys
 from urllib.request import Request
 from reactivex import Observable, Subject
 from datetime import datetime, time
@@ -19,23 +20,28 @@ class DatabaseSubject(Subject,TCPDevice):
                 await server.serve_forever()
 
             async def handleClient(reader:asyncio.StreamReader,writer:asyncio.StreamWriter):
-                peer = writer.get_extra_info("peername")
-                data = await reader.read(1024)
-                text = data.decode(encoding="utf-8")
-                # one time request, closing connection
-                writer.close()
-                await writer.wait_closed()
-                print("Database Subject, received {0} from {1}".format(text,peer))
-                # type of request, and value associated
-                type,plate,badge,time = text.split(",")
-                
-                result = await self.dbRequest(int(type),plate,badge,time)
-                
-                if result is not None:
-                    # create event
-                    evt = Event("{0},{1}".format(plate,badge),result,DeviceType.SERVER)
-                    print("submitting event {0}".format(evt.toString()))
-                    observer.on_next(evt)
+                try:
+                    peer = writer.get_extra_info("peername")
+                    data = await reader.read(1024)
+                    text = data.decode(encoding="utf-8")
+                    # one time request, closing connection
+                    writer.close()
+                    await writer.wait_closed()
+                    print("Database Subject, received {0} from {1}".format(text,peer))
+                    # type of request, and value associated
+                    type,plate,badge,time = text.split(",")
+                    
+                    result = await self.dbRequest(int(type),plate,badge,time)
+                    
+                    if result is not None:
+                        # create event
+                        evt = Event("{0},{1}".format(plate,badge),result,DeviceType.SERVER)
+                        print("submitting event {0}".format(evt.toString()))
+                        observer.on_next(evt)
+                except Exception as err:
+                    print("errore nel database subject")
+                    print(sys.call_tracing(sys.exc_info()[2],))
+                    observer.on_error(sys.exc_info())
 
             asyncio.create_task(connect())
         return reactivex.create(on_subscription)

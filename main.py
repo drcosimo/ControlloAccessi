@@ -6,6 +6,7 @@ from gateFactory import *
 from reactivex import Observable
 from database_interactions import generateDbTest
 from lane_analyzer import TransitAnalyzer
+from logger import Logger
 
 gateNord:Gate = None
  # lista di observables
@@ -27,7 +28,10 @@ async def main():
         observables.append(device.createObservable())
     laneObservable = reactivex.merge(*observables)
     trans = TransitAnalyzer()
+
+    logger = Logger()
     laneObservable.subscribe(trans)
+    trans.createObservable().subscribe(logger)
     
     '''if gateNord != None:
         # per ogni lane del gate

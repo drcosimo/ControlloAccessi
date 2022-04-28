@@ -1,0 +1,74 @@
+28-04-2022 12:10:56 ERROR    Task exception was never retrieved
+future: <Task finished name='Task-1' coro=<main() done, defined at C:\Users\UTENTE\Documents\python\reactive\Controllo_Accessi\main.py:18> exception=AttributeError("'Logger' object has no attribute 'is_stopped'")>
+Traceback (most recent call last):
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\observable\observable.py", line 123, in set_disposable
+    subscriber = self._subscribe_core(auto_detach_observer, scheduler)
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\subject\subject.py", line 38, in _subscribe_core
+    with self.lock:
+AttributeError: 'TransitAnalyzer' object has no attribute 'lock'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\UTENTE\Documents\python\reactive\Controllo_Accessi\main.py", line 32, in main
+    trans.subscribe(logger)
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\observable\observable.py", line 140, in subscribe
+    current_thread_scheduler.schedule(set_disposable)
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\scheduler\trampolinescheduler.py", line 49, in schedule
+    return self.schedule_absolute(self.now, action, state=state)
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\scheduler\trampolinescheduler.py", line 95, in schedule_absolute
+    self.get_trampoline().run(item)
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\scheduler\trampoline.py", line 30, in run
+    self._run()
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\scheduler\trampoline.py", line 51, in _run
+    item.invoke()
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\scheduler\scheduleditem.py", line 27, in invoke
+    ret = self.scheduler.invoke_action(self.action, state=self.state)
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\scheduler\scheduler.py", line 105, in invoke_action
+    ret = action(self, state)
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\observable\observable.py", line 125, in set_disposable
+    if not auto_detach_observer.fail(ex):
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\observer\autodetachobserver.py", line 64, in fail
+    self._on_error(exn)
+  File "C:\Users\UTENTE\Documents\python\reactive\Controllo_Accessi\logger.py", line 42, in on_error
+    return super().on_error(error)
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\observer\observer.py", line 54, in on_error
+    if not self.is_stopped:
+AttributeError: 'Logger' object has no attribute 'is_stopped'
+28-04-2022 12:12:29 ERROR    Task exception was never retrieved
+future: <Task finished name='Task-1' coro=<main() done, defined at C:\Users\UTENTE\Documents\python\reactive\Controllo_Accessi\main.py:18> exception=AttributeError("'Logger' object has no attribute 'is_stopped'")>
+Traceback (most recent call last):
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\observable\observable.py", line 123, in set_disposable
+    subscriber = self._subscribe_core(auto_detach_observer, scheduler)
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\subject\subject.py", line 38, in _subscribe_core
+    with self.lock:
+AttributeError: 'TransitAnalyzer' object has no attribute 'lock'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\UTENTE\Documents\python\reactive\Controllo_Accessi\main.py", line 32, in main
+    trans.subscribe(logger)
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\observable\observable.py", line 140, in subscribe
+    current_thread_scheduler.schedule(set_disposable)
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\scheduler\trampolinescheduler.py", line 49, in schedule
+    return self.schedule_absolute(self.now, action, state=state)
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\scheduler\trampolinescheduler.py", line 95, in schedule_absolute
+    self.get_trampoline().run(item)
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\scheduler\trampoline.py", line 30, in run
+    self._run()
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\scheduler\trampoline.py", line 51, in _run
+    item.invoke()
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\scheduler\scheduleditem.py", line 27, in invoke
+    ret = self.scheduler.invoke_action(self.action, state=self.state)
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\scheduler\scheduler.py", line 105, in invoke_action
+    ret = action(self, state)
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\observable\observable.py", line 125, in set_disposable
+    if not auto_detach_observer.fail(ex):
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\observer\autodetachobserver.py", line 64, in fail
+    self._on_error(exn)
+  File "C:\Users\UTENTE\Documents\python\reactive\Controllo_Accessi\logger.py", line 42, in on_error
+    return super().on_error(error)
+  File "C:\Users\UTENTE\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\reactivex\observer\observer.py", line 54, in on_error
+    if not self.is_stopped:
+AttributeError: 'Logger' object has no attribute 'is_stopped'

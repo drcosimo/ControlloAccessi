@@ -1,5 +1,6 @@
 import asyncio
 import string
+import sys
 import reactivex
 from enums import *
 
@@ -80,7 +81,7 @@ class TCPServer(TCPDevice):
     # funzione di creazione osservabile
     def createObservable(self) -> reactivex.Observable:
         def on_subscription(observer,scheduler):
-            async def connect(self):       
+            async def connect():       
                 # creazione server
                 server = await asyncio.start_server(handleClient,self.ip,self.port)
                 # serve per un tempo indefinito
@@ -114,10 +115,11 @@ class TCPServer(TCPDevice):
 
                 except Exception as err:
                     print("({0},{1}) serving, connection with {2} interrupted".format(self.ip,self.port,peer))
+                    print(sys.call_tracing(sys.exc_info()[2],))
                     # passo l'errore all'observer
-                    observer.on_error(err)
+                    observer.on_error(sys.exc_info())
             # creazione task della funzione connect
-            asyncio.create_task(connect(self))
+            asyncio.create_task(connect())
         # creo un osservabile a partire dalla funzione che definisce la sorgente dei dati
         return reactivex.create(on_subscription)
 
@@ -129,7 +131,7 @@ class TCPClient(TCPDevice):
     # funzione di creazione osservabile
     def createObservable(self) -> reactivex.Observable:
         def on_subscription(observer,scheduler):
-            async def connect(self):
+            async def connect():
                 # apertura connessione con il server
                 reader,writer = await asyncio.open_connection(self.ip,self.port)
                 # gestione comunicazione con il server
@@ -162,10 +164,12 @@ class TCPClient(TCPDevice):
                     observer.on_completed()
                 except Exception as err:
                     print("({0},{1}) client, connection with {2} interrupted".format(self.ip,self.port,peer))
+                    print(sys.call_tracing(sys.exc_info()[2],))
                     # passo l'errore all'observer
-                    observer.on_error(err)
+                    observer.on_error(sys.exc_info())
+
             # creazione task della funzione connect
-            asyncio.create_task(connect(self))
+            asyncio.create_task(connect())
         # creo un osservabile a partire dalla funzione che definisce la sorgente dei dati
         return reactivex.create(on_subscription)
 

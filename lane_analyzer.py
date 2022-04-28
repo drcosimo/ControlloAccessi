@@ -1,7 +1,9 @@
 import asyncio
 from datetime import datetime
+
+import reactivex
 from custom_errors import AlreadyInitialized
-from reactivex import Subject
+from reactivex import Observable, Subject
 
 from enums import *
 from classes import Connection,Event
@@ -14,28 +16,29 @@ class TransitAnalyzer(Subject):
         self.connections = Connection()
         self.startTimeTransit = None
         self.endTimeTransit = None
-    
-    # Funzione che ha il compito di di assegnare un valore alla targa se essa non ha ancora un valore
-    def setActualPlate(self, plate):
-        if self.actualPlate is None:
-            self.actualPlate = plate
-        elif self.actualPlate != plate:
-            raise AlreadyInitialized("E' stato già assegnato un valore alla targa")
+        self.logObject= None
 
+    # metodo per l'emissione dati al logger
+    def createObservable(self) -> Observable:
+        def on_subscription(observer,scheduler):
+            async def log():
+                try:
+                    while True:
+                        # inizializzo variabile di stato
+                        self.logObject = None
+                        # aspetto che l'evento venga reso disponibile dall'analyzer
+                        while self.logObject is None:
+                            await asyncio.sleep(0)
+                        # emetto l'evento al logger
+                        observer.on_next(self.logObject)
+                except Exception as err:
+                    observer.on_error(err)
+            asyncio.create_task(log())        
+        return reactivex.create(on_subscription)
 
-    # Funzione che ha il compito di di assegnare un valore al badge se esso non ha ancora un valore
-    def setActualBadge(self, badge):
-        if self.actualBadge is None:
-            self.setActualBadge = badge
-        else:
-            raise AlreadyInitialized("E' stato già assegnato un valore al badge")
+    def emettiLogger(self,event:EventType):
+        self.logObject = event
 
-    def setActualPolicy(self,policy):
-        if self.actualPolicy is None:
-            self.setActualPolicy = policy
-        else:
-            raise AlreadyInitialized("E' stato già assegnato un valore alla policy")
-    
     def on_next(self, event:Event):
         if event is not None:
             self.analyze(event)
@@ -52,11 +55,14 @@ class TransitAnalyzer(Subject):
 
     
     def analyze(self, event:Event): # TODO: aggiungere il tipo all'event
+        # emissione evento al logger
+        self.emettiLogger(event)
+
         # ----------------------------------------------------
         # waiting for transit q0
         # ----------------------------------------------------
         if self.transitState == TransitState.WAIT_FOR_TRANSIT:
-            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
+
             # controllo tipo evento
             if event.eventType == EventType.HUMAN_ACTION:
                 self.transitState = TransitState.GRANT_OK
@@ -73,16 +79,15 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
         if self.transitState == TransitState.TRANSIT_STARTED:
             # TODO aggiungere ritardo
-            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             if event.eventType == EventType.HUMAN_ACTION:
                 self.transitState = TransitState.GRANT_OK
             # salvo anche il badge se è arrivato
             elif event.eventType == EventType.BADGE and self.actualPlate != None:
-                self.setActualBadge(event.value)
+                self.actualBadge = event.value
                 self.transitState = TransitState.GRANT_REQ_BADGEPLATE
             # salvo anche la plate se è arrivata
             elif event.eventType == EventType.PLATE and self.actualBadge != None:
-                self.setActualPlate(event.value)
+                self.actualPlate = event.value
                 self.transitState = TransitState.GRANT_REQ_BADGEPLATE
             else:
                 self.transitState = TransitState.GRANT_REQ
@@ -91,7 +96,6 @@ class TransitAnalyzer(Subject):
         # grant request q2
         # ----------------------------------------------------
         if self.transitState == TransitState.GRANT_REQ:
-            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             if event.eventType == EventType.HUMAN_ACTION:
                 self.transitState = TransitState.GRANT_OK
             else:   
@@ -104,7 +108,6 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
        
         if self.transitState == TransitState.WAIT_FOR_RESPONSE:
-            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             if event.eventType == EventType.HUMAN_ACTION:
                 self.transitState = TransitState.GRANT_OK
             # no policy found
@@ -125,15 +128,14 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
        
         if self.transitState == TransitState.WAIT_FOR_DATA:
-            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             # TODO aggiungere timeout
             if event.eventType == EventType.HUMAN_ACTION:
                 self.transitState = TransitState.GRANT_OK    
             elif self.actualPlate != None and event.eventType == EventType.BADGE:
-                self.setActualBadge(event.value)
+                self.actualBadge = event.value
                 self.transitState = TransitState.GRANT_REQ_BADGEPLATE
             elif self.actualBadge != None and event.eventType == EventType.PLATE:
-                self.setActualPlate(event.value)
+                self.actualPlate = event.value
                 self.transitState = TransitState.GRANT_REQ_BADGEPLATE
         
         # ----------------------------------------------------
@@ -141,7 +143,6 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
        
         if self.transitState == TransitState.GRANT_REQ_BADGEPLATE:
-            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             if event.eventType == EventType.HUMAN_ACTION:
                 self.transitState = TransitState.GRANT_OK    
             else:
@@ -155,7 +156,6 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
        
         if self.transitState == TransitState.GRANT_RES_BADGEPLATE:
-            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             if event.eventType == EventType.BADGE_PLATE_OK or event.eventType == EventType.HUMAN_ACTION:
                 self.transitState = TransitState.GRANT_OK
             elif event.eventType == EventType.NO_GRANT:
@@ -165,7 +165,6 @@ class TransitAnalyzer(Subject):
         # accesso garantito,apertura sbarra
         # ----------------------------------------------------
         if self.transitState == TransitState.GRANT_OK:
-            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             # connessione alla sbarra
             asyncio.create_task(self.connections.connectToBar())
             # inserimento transit history con almeno un dato
@@ -181,7 +180,6 @@ class TransitAnalyzer(Subject):
         # accesso non consentito
         # ----------------------------------------------------
         if self.transitState == TransitState.GRANT_REFUSED:
-            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             if event.eventType == EventType.HUMAN_ACTION:
                 self.transitState = TransitState.GRANT_OK
             else:
@@ -191,12 +189,11 @@ class TransitAnalyzer(Subject):
         # fine transito, ritorno stato iniziale
         # ----------------------------------------------------
         if self.transitState == TransitState.END_TRANSIT:
-            print("ANALYZER - {0}, STATE: {1}".format(event.toString(),self.transitState))
             self.cleanAnalyzer()
 
     def cleanAnalyzer(self):
-        self.actualPlate = None
         self.actualBadge = None
+        self.actualPlate = None
         self.transitState = TransitState.WAIT_FOR_TRANSIT
         self.startTimeTransit = None
         self.endTimeTransit = None
