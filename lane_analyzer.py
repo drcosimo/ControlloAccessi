@@ -1,5 +1,6 @@
 import asyncio
 from datetime import datetime
+import sys
 
 import reactivex
 from custom_errors import AlreadyInitialized
@@ -21,23 +22,36 @@ class TransitAnalyzer(Subject):
     # metodo per l'emissione dati al logger
     def createObservable(self) -> Observable:
         def on_subscription(observer,scheduler):
-            async def log():
+            async def connect():
+                # apertura connessione con il server
+                server = await asyncio.start_server(handleClient, self.connections.logger_ip,self.connections.logger_port)
+                # gestione comunicazione con il server
+                await server.serve_forever()
+            # client callback handler
+            async def handleClient(reader:asyncio.StreamReader,writer:asyncio.StreamWriter):
                 try:
-                    while True:
-                        # inizializzo variabile di stato
-                        self.logObject = None
-                        # aspetto che l'evento venga reso disponibile dall'analyzer
-                        while self.logObject is None:
-                            await asyncio.sleep(0)
-                        # emetto l'evento al logger
-                        observer.on_next(self.logObject)
+                    # aspetto dato in arrivo
+                    data = await reader.read(1024)
+                    # decodifica dato
+                    value = data.decode("utf-8")
+                    tmp = value.split(",")
+                    event = Event(tmp[0], tmp[1], tmp[2])
+                    # passo l'evento alla funzione on_next dell'observer
+                    observer.on_next(event)
+                        
+                    # termino comunicazione 
+                    writer.close()
+                    await writer.wait_closed()
                 except Exception as err:
-                    observer.on_error(err)
-            asyncio.create_task(log())        
-        return reactivex.create(on_subscription)
+                    #print("({0},{1}) client, connection with {2} interrupted".format(self.ip,self.port,peer))
+                    #print(sys.call_tracing(sys.exc_info()[2],))
+                    # passo l'errore all'observer
+                    observer.on_error(sys.exc_info())
 
-    def emettiLogger(self,event:EventType):
-        self.logObject = event
+            # creazione task della funzione connect
+            asyncio.create_task(connect())
+        # creo un osservabile a partire dalla funzione che definisce la sorgente dei dati
+        return reactivex.create(on_subscription)
 
     def on_next(self, event:Event):
         if event is not None:
@@ -55,22 +69,21 @@ class TransitAnalyzer(Subject):
 
     
     def analyze(self, event:Event): # TODO: aggiungere il tipo all'event
-        # emissione evento al logger
-        self.emettiLogger(event)
 
         # ----------------------------------------------------
         # waiting for transit q0
         # ----------------------------------------------------
         if self.transitState == TransitState.WAIT_FOR_TRANSIT:
+            print(f"ANALYZER: {self.transitState} {event.toString()}")
             # controllo tipo evento
             if event.eventType == EventType.HUMAN_ACTION:
-                self.emettiLogger(event)
+                self.connections.loggerRequest(event)
                 self.transitState = TransitState.GRANT_OK
             elif event.eventType == EventType.PLATE:
-                self.emettiLogger(event)
+                self.connections.loggerRequest(event)
                 self.actualPlate = event.value
             elif event.eventType == EventType.BADGE:
-                self.emettiLogger(event)
+                self.connections.loggerRequest(event)
                 self.actualBadge = event.value
             
             # passo al secondo stato
@@ -80,9 +93,10 @@ class TransitAnalyzer(Subject):
         # transit started q1
         # ----------------------------------------------------
         if self.transitState == TransitState.TRANSIT_STARTED:
+            print(f"ANALYZER: {self.transitState} {event.toString()}")
             # TODO aggiungere ritardo
             if event.eventType == EventType.HUMAN_ACTION:
-                self.emettiLogger(event)
+                self.connections.loggerRequest(event)
                 self.transitState = TransitState.GRANT_OK
             # salvo anche il badge se è arrivato
             elif event.eventType == EventType.BADGE and self.actualPlate != None:
@@ -99,8 +113,9 @@ class TransitAnalyzer(Subject):
         # grant request q2
         # ----------------------------------------------------
         if self.transitState == TransitState.GRANT_REQ:
+            print(f"ANALYZER: {self.transitState} {event.toString()}")
             if event.eventType == EventType.HUMAN_ACTION:
-                self.emettiLogger(event)
+                self.connections.loggerRequest(event)
                 self.transitState = TransitState.GRANT_OK
             else:   
                 # richiesta al db
@@ -112,14 +127,16 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
        
         if self.transitState == TransitState.WAIT_FOR_RESPONSE:
+            print(f"ANALYZER: {self.transitState} {event.toString()}")
             if event.eventType == EventType.HUMAN_ACTION:
+                self.connections.loggerRequest(event)
                 self.transitState = TransitState.GRANT_OK
             # no policy found
             elif event.eventType == EventType.NO_POLICY:
-                self.emettiLogger(event)
+                self.connections.loggerRequest(event)
                 self.transitState = TransitState.GRANT_REFUSED
             elif (event.eventType == EventType.ONLY_PLATE_POLICY and event.value.split(",")[0] == self.actualPlate) or (event.eventType == EventType.ONLY_BADGE_POLICY and event.value.split(",")[1] == self.actualBadge):
-                self.emettiLogger(event)
+                self.connections.loggerRequest(event)
                 # grant ok
                 self.transitState = TransitState.GRANT_OK
             elif (event.eventType == EventType.BADGE_PLATE_POLICY) or (event.eventType == EventType.ONLY_PLATE_POLICY and self.actualPlate is None) or (event.eventType == EventType.ONLY_BADGE_POLICY and self.actualBadge is None):
@@ -134,9 +151,10 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
        
         if self.transitState == TransitState.WAIT_FOR_DATA:
+            print(f"ANALYZER: {self.transitState} {event.toString()}")
             # TODO aggiungere timeout
             if event.eventType == EventType.HUMAN_ACTION:
-                self.emettiLogger(event)
+                self.connections.loggerRequest(event)
                 self.transitState = TransitState.GRANT_OK    
             elif self.actualPlate != None and event.eventType == EventType.BADGE:
                 self.actualBadge = event.value
@@ -150,8 +168,9 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
        
         if self.transitState == TransitState.GRANT_REQ_BADGEPLATE:
+            print(f"ANALYZER: {self.transitState} {event.toString()}")
             if event.eventType == EventType.HUMAN_ACTION:
-                self.emettiLogger(event)
+                self.connections.loggerRequest(event)
                 self.transitState = TransitState.GRANT_OK    
             else:
                 # richiesta grant badgeplate
@@ -164,16 +183,19 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
        
         if self.transitState == TransitState.GRANT_RES_BADGEPLATE:
+            print(f"ANALYZER: {self.transitState} {event.toString()}")
             if event.eventType == EventType.BADGE_PLATE_OK or event.eventType == EventType.HUMAN_ACTION:
-                self.emettiLogger(event)
+                self.connections.loggerRequest(event)
                 self.transitState = TransitState.GRANT_OK
             elif event.eventType == EventType.NO_GRANT:
+                self.connections.loggerRequest(event)
                 self.transitState = TransitState.GRANT_REFUSED
         
         # ----------------------------------------------------
         # accesso garantito,apertura sbarra
         # ----------------------------------------------------
         if self.transitState == TransitState.GRANT_OK:
+            print(f"ANALYZER: {self.transitState} {event.toString()}")
             # connessione alla sbarra
             asyncio.create_task(self.connections.connectToBar())
             # inserimento transit history con almeno un dato
@@ -189,8 +211,9 @@ class TransitAnalyzer(Subject):
         # accesso non consentito
         # ----------------------------------------------------
         if self.transitState == TransitState.GRANT_REFUSED:
+            print(f"ANALYZER: {self.transitState} {event.toString()}")
             if event.eventType == EventType.HUMAN_ACTION:
-                self.emettiLogger(event)
+                self.connections.loggerRequest(event)
                 self.transitState = TransitState.GRANT_OK
             else:
                 self.transitState = TransitState.END_TRANSIT
@@ -199,7 +222,8 @@ class TransitAnalyzer(Subject):
         # fine transito, ritorno stato iniziale
         # ----------------------------------------------------
         if self.transitState == TransitState.END_TRANSIT:
-            self.emettiLogger(None)
+            print(f"ANALYZER: {self.transitState} {event.toString()}")
+            self.connections.loggerRequest(event)
             self.cleanAnalyzer()
 
     def cleanAnalyzer(self):

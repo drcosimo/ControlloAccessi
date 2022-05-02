@@ -45,14 +45,29 @@ class Logger(Observer):
     def on_error(self, error: Exception) -> None:
         return super().on_error(error)
     
-    def formatEvent(self,evt:Event):
+    def formatEvent(self,evt: Event):
+        print(f"LOGGER: {evt.toString()}")
         if evt is None:
-            return f"TRANSIT_ENDED"
-        elif evt.eventType == EventType.PLATE or evt.eventType == EventType.BADGE:
-            return f"TRANSIT_STARTED_FROM_{EventType(evt.eventType).name}\t{evt.value}\t READ BY{DeviceType(evt.deviceType).name}"
-        elif evt.eventType == EventType.HUMAN_ACTION:
-            return f"manual_open_gate"
-        elif evt.eventType == EventType.NO_POLICY or evt.eventType == EventType.NO_GRANT:
-            return f"ACCESS_REFUSED TO\t{evt.value}"
-        elif evt.eventType == EventType.ONLY_BADGE_POLICY or evt.eventType == EventType.ONLY_PLATE_POLICY or evt.eventType == EventType.BADGE_PLATE_OK:
-            return f"ACCESS_GRANTED TO\t{evt.value}"
+            return "TRANSIT_ENDED"
+        
+        value = self.formatEventValue(evt.value)
+
+        if evt.eventType == EventType.PLATE or evt.eventType == EventType.BADGE:
+            return f"TRANSIT_STARTED_FROM_{EventType(evt.eventType).name}\t{value}\t READ BY {DeviceType(evt.deviceType).name}"
+        if evt.eventType == EventType.HUMAN_ACTION:
+            return "manual_open_gate"
+        if evt.eventType == EventType.NO_POLICY or evt.eventType == EventType.NO_GRANT:
+            return f"ACCESS_REFUSED TO\t{value}"
+        if evt.eventType == EventType.ONLY_BADGE_POLICY or evt.eventType == EventType.ONLY_PLATE_POLICY or evt.eventType == EventType.BADGE_PLATE_OK:
+            return f"ACCESS_GRANTED TO\t{value}"
+
+
+    def formatEventValue(self, evt):
+        values = evt.split(",")
+
+        if values[0] == "None" and len(values) > 1:
+            return values[1]
+        elif len(values) > 1 and values[1] == "None":
+            return values[0]
+        
+        return values

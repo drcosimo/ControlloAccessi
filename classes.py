@@ -17,7 +17,7 @@ class Gate():
         try:
             return self.lanes[index]
         except IndexError as err:
-            print("out of range at Lane.getDevice({0})".format(index))
+            #print("out of range at Lane.getDevice({0})".format(index))
             return None
 
     def getLanes(self):
@@ -50,7 +50,7 @@ class Lane():
         try:
             return self.devices[index]
         except IndexError as err:
-            print("out of range at Lane.getDevice({0})".format(index))
+            #print("out of range at Lane.getDevice({0})".format(index))
             return None
        
 
@@ -102,7 +102,7 @@ class TCPServer(TCPDevice):
                         value = data.decode("utf-8")
                         # creazione evento 
                         event = Event(value,self.eventType,self.deviceType)
-                        print("ottenuto {0} da {1}".format(event.toString(),peer))
+                        #print("ottenuto {0} da {1}".format(event.toString(),peer))
                         # passo l'evento alla funzione on_next dell'observer
                         observer.on_next(event)
                     
@@ -115,7 +115,7 @@ class TCPServer(TCPDevice):
 
                 except Exception as err:
                     print("({0},{1}) serving, connection with {2} interrupted".format(self.ip,self.port,peer))
-                    print(sys.call_tracing(sys.exc_info()[2],))
+                    #print(sys.call_tracing(sys.exc_info()[2],))
                     # passo l'errore all'observer
                     observer.on_error(sys.exc_info())
             # creazione task della funzione connect
@@ -164,7 +164,7 @@ class TCPClient(TCPDevice):
                     observer.on_completed()
                 except Exception as err:
                     print("({0},{1}) client, connection with {2} interrupted".format(self.ip,self.port,peer))
-                    print(sys.call_tracing(sys.exc_info()[2],))
+                    #print(sys.call_tracing(sys.exc_info()[2],))
                     # passo l'errore all'observer
                     observer.on_error(sys.exc_info())
 
@@ -200,13 +200,16 @@ class TestAnalyzer(reactivex.Observable):
         super().__init__()
 
     def on_next(self, event) -> None:
-        print("{0}".format(event.toString()))
+        pass
+        #print("{0}".format(event.toString()))
     
     def on_completed(self) -> None:
-        print("daje")
+        pass
+        #print("daje")
     
     def on_error(self, error: Exception) -> None:
-        print("errore:{0}".format(error))
+        pass
+        #print("errore:{0}".format(error))
 
 class Connection():
     def __init__(self) -> None:
@@ -214,6 +217,8 @@ class Connection():
         self.db_port = 10005
         self.bar_ip = "127.0.0.1"
         self.bar_port = 10010
+        self.logger_ip = "127.0.0.1"
+        self.logger_port = 10011
     
     async def connectToDb(self,req):
         r,w = await asyncio.open_connection(self.dp_ip,self.db_port)
@@ -231,6 +236,14 @@ class Connection():
         w.close()
         await w.wait_closed()
 
+    async def connectToLogger(self, evt):
+        r, w = await asyncio.open_connection(self.logger_ip, self.logger_port)
+        w.write(evt.encode("utf-8"))
+        await w.drain()
+
+        w.close()
+        await w.wait_closed()
+
     def dbRequest(self,reqType:RequestType,reqArgs):
         # richiesta grant badgeplate
         req = "{0}".format(reqType)
@@ -238,3 +251,8 @@ class Connection():
             req += ",{0}".format(arg)
    
         asyncio.create_task(self.connectToDb(req))
+
+    def loggerRequest(self, evt: Event):
+        req = f"{evt.value}, {evt.eventType}, {evt.deviceType}"
+
+        asyncio.create_task(self.connectToLogger(req))
