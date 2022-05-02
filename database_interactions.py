@@ -65,7 +65,9 @@ def createPersonVehicleTable():
 def createPolicyTable():
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS Policy(GrantPolicy INTEGER PRIMARY KEY)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS Policy("
+            "GrantPolicy INTEGER PRIMARY KEY, "
+            "Name varchar(255))")
 
 
 def createPersonPolicyTable():
@@ -134,7 +136,7 @@ def insertPolicy():
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
 
-        cursor.execute("INSERT INTO Policy (GrantPolicy) VALUES (1), (2), (3)")
+        cursor.execute("INSERT INTO Policy (GrantPolicy, Name) VALUES (1, 'ONLY_BADGE_POLICY'), (2, 'ONLY_PLATE_POLICY'), (3, 'BADGE_PLATE_POLICY')")
 
 
 def insertPersonPolicy(idperson, grantpolicy, start, end):

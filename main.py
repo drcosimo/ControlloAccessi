@@ -30,8 +30,8 @@ async def main():
     trans = TransitAnalyzer()
 
     logger = Logger()
-    laneObservable.subscribe(trans)
     trans.createObservable().subscribe(logger)
+    laneObservable.subscribe(trans)
     
     '''if gateNord != None:
         # per ogni lane del gate

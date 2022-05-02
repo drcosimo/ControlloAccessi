@@ -15,7 +15,7 @@ class Logger(Observer):
         logging.getLogger().addHandler(logging.StreamHandler())
 
     def configLog(self):
-        logging.basicConfig(filename=self.fileName,filemode='a',
+        logging.basicConfig(filename=self.fileName,filemode='w',
             format='%(asctime)s %(levelname)-8s %(message)s',
             level=logging.INFO,
             datefmt='%d-%m-%Y %H:%M:%S'
@@ -46,28 +46,31 @@ class Logger(Observer):
         return super().on_error(error)
     
     def formatEvent(self,evt: Event):
-        print(f"LOGGER: {evt.toString()}")
-        if evt is None:
-            return "TRANSIT_ENDED"
         
         value = self.formatEventValue(evt.value)
 
-        if evt.eventType == EventType.PLATE or evt.eventType == EventType.BADGE:
-            return f"TRANSIT_STARTED_FROM_{EventType(evt.eventType).name}\t{value}\t READ BY {DeviceType(evt.deviceType).name}"
-        if evt.eventType == EventType.HUMAN_ACTION:
+        evtType = int(evt.eventType)
+        devType = int(evt.deviceType)
+
+        if (evtType == EventType.PLATE and (devType == DeviceType.FRONT_CAM or devType == DeviceType.REAR_CAM)) or (evtType == EventType.BADGE and devType == DeviceType.RFID):
+            return f"TRANSIT_STARTED_FROM_{EventType(evtType).name}\t{value}\t READ BY {DeviceType(devType).name}"
+        if evtType == EventType.HUMAN_ACTION:
             return "manual_open_gate"
-        if evt.eventType == EventType.NO_POLICY or evt.eventType == EventType.NO_GRANT:
+        if evtType == EventType.NO_POLICY or evtType == EventType.NO_GRANT:
             return f"ACCESS_REFUSED TO\t{value}"
-        if evt.eventType == EventType.ONLY_BADGE_POLICY or evt.eventType == EventType.ONLY_PLATE_POLICY or evt.eventType == EventType.BADGE_PLATE_OK:
+        if evtType == EventType.ONLY_BADGE_POLICY or evtType == EventType.ONLY_PLATE_POLICY or evtType == EventType.BADGE_PLATE_OK:
             return f"ACCESS_GRANTED TO\t{value}"
 
 
     def formatEventValue(self, evt):
-        values = evt.split(",")
+        if evt is not None:
+            values = evt.split(",")
 
-        if values[0] == "None" and len(values) > 1:
-            return values[1]
-        elif len(values) > 1 and values[1] == "None":
-            return values[0]
+            if values[0] == "None" and len(values) > 1:
+                return values[1]
+            elif len(values) > 1 and values[1] == "None":
+                return values[0]
         
-        return values
+            return values
+
+        return None

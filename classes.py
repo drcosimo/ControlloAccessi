@@ -253,6 +253,6 @@ class Connection():
         asyncio.create_task(self.connectToDb(req))
 
     def loggerRequest(self, evt: Event):
-        req = f"{evt.value}, {evt.eventType}, {evt.deviceType}"
+        req = f"{evt.value},{evt.eventType},{evt.deviceType}"
 
         asyncio.create_task(self.connectToLogger(req))

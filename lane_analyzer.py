@@ -35,7 +35,14 @@ class TransitAnalyzer(Subject):
                     # decodifica dato
                     value = data.decode("utf-8")
                     tmp = value.split(",")
-                    event = Event(tmp[0], tmp[1], tmp[2])
+
+                    if len(tmp) > 3:
+                        event = Event(f"{tmp[0]},{tmp[1]}", tmp[2], tmp[3])
+                    elif len(tmp) > 2:
+                        event = Event(tmp[0], tmp[1], tmp[2])
+                    elif len(tmp) > 1:
+                        event = Event(None, tmp[0], tmp[1])
+
                     # passo l'evento alla funzione on_next dell'observer
                     observer.on_next(event)
                         
@@ -74,7 +81,6 @@ class TransitAnalyzer(Subject):
         # waiting for transit q0
         # ----------------------------------------------------
         if self.transitState == TransitState.WAIT_FOR_TRANSIT:
-            print(f"ANALYZER: {self.transitState} {event.toString()}")
             # controllo tipo evento
             if event.eventType == EventType.HUMAN_ACTION:
                 self.connections.loggerRequest(event)
@@ -93,7 +99,6 @@ class TransitAnalyzer(Subject):
         # transit started q1
         # ----------------------------------------------------
         if self.transitState == TransitState.TRANSIT_STARTED:
-            print(f"ANALYZER: {self.transitState} {event.toString()}")
             # TODO aggiungere ritardo
             if event.eventType == EventType.HUMAN_ACTION:
                 self.connections.loggerRequest(event)
@@ -113,7 +118,6 @@ class TransitAnalyzer(Subject):
         # grant request q2
         # ----------------------------------------------------
         if self.transitState == TransitState.GRANT_REQ:
-            print(f"ANALYZER: {self.transitState} {event.toString()}")
             if event.eventType == EventType.HUMAN_ACTION:
                 self.connections.loggerRequest(event)
                 self.transitState = TransitState.GRANT_OK
@@ -127,7 +131,6 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
        
         if self.transitState == TransitState.WAIT_FOR_RESPONSE:
-            print(f"ANALYZER: {self.transitState} {event.toString()}")
             if event.eventType == EventType.HUMAN_ACTION:
                 self.connections.loggerRequest(event)
                 self.transitState = TransitState.GRANT_OK
@@ -151,7 +154,6 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
        
         if self.transitState == TransitState.WAIT_FOR_DATA:
-            print(f"ANALYZER: {self.transitState} {event.toString()}")
             # TODO aggiungere timeout
             if event.eventType == EventType.HUMAN_ACTION:
                 self.connections.loggerRequest(event)
@@ -168,7 +170,6 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
        
         if self.transitState == TransitState.GRANT_REQ_BADGEPLATE:
-            print(f"ANALYZER: {self.transitState} {event.toString()}")
             if event.eventType == EventType.HUMAN_ACTION:
                 self.connections.loggerRequest(event)
                 self.transitState = TransitState.GRANT_OK    
@@ -183,7 +184,6 @@ class TransitAnalyzer(Subject):
         # ----------------------------------------------------
        
         if self.transitState == TransitState.GRANT_RES_BADGEPLATE:
-            print(f"ANALYZER: {self.transitState} {event.toString()}")
             if event.eventType == EventType.BADGE_PLATE_OK or event.eventType == EventType.HUMAN_ACTION:
                 self.connections.loggerRequest(event)
                 self.transitState = TransitState.GRANT_OK
@@ -195,7 +195,6 @@ class TransitAnalyzer(Subject):
         # accesso garantito,apertura sbarra
         # ----------------------------------------------------
         if self.transitState == TransitState.GRANT_OK:
-            print(f"ANALYZER: {self.transitState} {event.toString()}")
             # connessione alla sbarra
             asyncio.create_task(self.connections.connectToBar())
             # inserimento transit history con almeno un dato
@@ -211,7 +210,6 @@ class TransitAnalyzer(Subject):
         # accesso non consentito
         # ----------------------------------------------------
         if self.transitState == TransitState.GRANT_REFUSED:
-            print(f"ANALYZER: {self.transitState} {event.toString()}")
             if event.eventType == EventType.HUMAN_ACTION:
                 self.connections.loggerRequest(event)
                 self.transitState = TransitState.GRANT_OK
@@ -222,8 +220,6 @@ class TransitAnalyzer(Subject):
         # fine transito, ritorno stato iniziale
         # ----------------------------------------------------
         if self.transitState == TransitState.END_TRANSIT:
-            print(f"ANALYZER: {self.transitState} {event.toString()}")
-            self.connections.loggerRequest(event)
             self.cleanAnalyzer()
 
     def cleanAnalyzer(self):
