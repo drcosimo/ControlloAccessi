@@ -9,6 +9,8 @@ from enums import DeviceType, EventType
 class Logger(Observer):
 
     def __init__(self):
+        self.actualPlate = None
+        self.actualBadge = None
         data = date.today().strftime('%d-%m-%Y')
         self.fileName = "log_{0}".format(data)
         self.configLog()
@@ -52,15 +54,23 @@ class Logger(Observer):
         evtType = int(evt.eventType)
         devType = int(evt.deviceType)
 
-        if (evtType == EventType.PLATE and (devType == DeviceType.FRONT_CAM or devType == DeviceType.REAR_CAM)) or (evtType == EventType.BADGE and devType == DeviceType.RFID):
-            return f"TRANSIT_STARTED_FROM_{EventType(evtType).name}\t{value}\t READ BY {DeviceType(devType).name}"
+        # TRANSIT STARTED LOG
+        if self.actualPlate is None and self.actualBadge is None:
+            if evtType == EventType.PLATE:
+                self.actualPlate = evt.value
+                return f"TRANSIT_STARTED_FROM_PLATE\t{value}\t READ BY {DeviceType(devType).name}"
+            elif evtType == EventType.BADGE:
+                self.actualBadge = evt.value
+                return f"TRANSIT_STARTED_FROM_BADGE\t{value}\t READ BY {DeviceType(devType).name}"
+        
         if evtType == EventType.HUMAN_ACTION:
             return "manual_open_gate"
-        if evtType == EventType.NO_POLICY or evtType == EventType.NO_GRANT:
-            return f"ACCESS_REFUSED TO\t{value}"
-        if evtType == EventType.ONLY_BADGE_POLICY or evtType == EventType.ONLY_PLATE_POLICY or evtType == EventType.BADGE_PLATE_OK:
-            return f"ACCESS_GRANTED TO\t{value}"
 
+        if evtType == EventType.GRANT_REFUSED:
+            return f"ACCESS_REFUSED TO\t{value}"
+        
+        if evtType == EventType.GRANT_OK:
+            return f"ACCESS_GRANTED TO\t{value}"
 
     def formatEventValue(self, evt):
         if evt is not None:

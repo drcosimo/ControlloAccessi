@@ -9,7 +9,7 @@ class Gate():
     def __init__(self, idGate, gateName:GateName) -> None:
         self.idGate = idGate
         self.gateName = gateName
-    
+        self.loggingMode = False
     def appendLane(self,lane):
         self.lanes.append(lane)
     
@@ -25,6 +25,7 @@ class Gate():
 
 class Lane():
     laneStatus:LaneStatus = LaneStatus.LANE_NOT_ACTIVE
+
     devices = []
 
     def __init__(self,idLane,gate:Gate) -> None:
@@ -236,23 +237,9 @@ class Connection():
         w.close()
         await w.wait_closed()
 
-    async def connectToLogger(self, evt):
-        r, w = await asyncio.open_connection(self.logger_ip, self.logger_port)
-        w.write(evt.encode("utf-8"))
-        await w.drain()
-
-        w.close()
-        await w.wait_closed()
-
     def dbRequest(self,reqArgs):
         # richiesta grant badgeplate
         req = ""
         for arg in reqArgs:
             req += ",{0}".format(arg)
-   
         asyncio.create_task(self.connectToDb(req))
-
-    def loggerRequest(self, evt: Event):
-        req = f"{evt.value},{evt.eventType},{evt.deviceType}"
-
-        asyncio.create_task(self.connectToLogger(req))

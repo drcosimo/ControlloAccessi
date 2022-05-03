@@ -21,7 +21,7 @@ class PolicyType(IntEnum):
     ONLY_PLATE_POLICY = 2
     BADGE_PLATE_POLICY = 3
     NO_POLICY = 4
-    
+
 class TransitState(IntEnum):
     WAIT_FOR_TRANSIT = 1
     TRANSIT_STARTED = 2

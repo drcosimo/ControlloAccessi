@@ -28,9 +28,8 @@ async def main():
         observables.append(device.createObservable())
     laneObservable = reactivex.merge(*observables)
     trans = TransitAnalyzer()
-
     logger = Logger()
-    trans.createObservable().subscribe(logger)
+    
     laneObservable.subscribe(trans)
     
     '''if gateNord != None:
