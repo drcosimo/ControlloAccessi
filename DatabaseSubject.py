@@ -7,7 +7,7 @@ import reactivex
 from database_interactions import *
 
 from classes import TCPDevice,Event
-from enums import DeviceType, EventType, RequestType
+from enums import DeviceType, EventType, PolicyType, RequestType
 
 class DatabaseSubject(Subject,TCPDevice):
     def __init__(self,ip,port,lane) -> None:
@@ -29,15 +29,17 @@ class DatabaseSubject(Subject,TCPDevice):
                     await writer.wait_closed()
                     #print("Database Subject, received {0} from {1}".format(text,peer))
                     # type of request, and value associated
-                    type,plate,badge,time = text.split(",")
+                    plate,badge,time = text.split(",")
+                   
+                    result = await self.dbRequest(plate,badge,time)
                     
-                    result = await self.dbRequest(int(type),plate,badge,time)
+                    # inserimento transit history se il grant va a buon fine
+                    if result == EventType.GRANT_OK:
+                        insertTransitHistory(plate,badge,time)
                     
-                    if result is not None:
-                        # create event
-                        evt = Event("{0},{1}".format(plate,badge),result,DeviceType.SERVER)
-                        #print("submitting event {0}".format(evt.toString()))
-                        observer.on_next(evt)
+                    # emissione risposta all'analyzer
+                    evt = Event("{0},{1}".format(plate,badge),result,DeviceType.SERVER)
+                    observer.on_next(evt)
                 except Exception as err:
                     #print("errore nel database subject")
                     #print(sys.call_tracing(sys.exc_info()[2],))
@@ -46,33 +48,26 @@ class DatabaseSubject(Subject,TCPDevice):
             asyncio.create_task(connect())
         return reactivex.create(on_subscription)
     
-    async def dbRequest(self,tipo,plate,badge,time):
-        if tipo == RequestType.POLICY:
-            if plate != "None":
-                return selectPolicyFromVehicle(plate,time)
-            elif badge != "None":
-                return selectPolicyFromPerson(badge,time)
-        
-        elif tipo == RequestType.FIND_BADGE:
-            if findBadgeInPersons(badge):
-                return EventType.BADGE_OK
+    async def dbRequest(self,plate,badge,time):
+        if plate != "None" and badge != "None":
+            res = findPlateAndBadge(plate,badge)
+            if res:
+                return EventType.GRANT_OK
             else:
-                return EventType.NO_GRANT
-        
-        elif tipo == RequestType.FIND_PLATE:
-            if findPlateInVehicles(plate):
-                return EventType.PLATE_OK
+                return EventType.GRANT_REFUSED
+        elif badge == "None":
+            res = selectPolicyFromVehicle(plate,time)
+            if res == PolicyType.ONLY_PLATE_POLICY:
+                return EventType.GRANT_OK
+            elif res == PolicyType.NO_POLICY:
+                return EventType.GRANT_REFUSED
             else:
-                return EventType.NO_GRANT
-        
-        elif tipo == RequestType.FIND_PLATE_BADGE:
-            if findPlateAndBadge(plate,badge):
-                return EventType.BADGE_PLATE_OK
+                return EventType.NEED_BADGE
+        elif plate == "None":
+            res = selectPolicyFromPerson(badge,time)
+            if res == PolicyType.ONLY_BADGE_POLICY:
+                return EventType.GRANT_OK
+            elif res == PolicyType.NO_POLICY:
+                return EventType.GRANT_REFUSED
             else:
-                return EventType.NO_GRANT
-        
-        elif tipo == RequestType.INSERT_TRANSIT_HISTORY:
-            idV = findIdVehicleFromPlate(plate)
-            idP = findIdPersonFromBadge(badge)
-            insertTransitHistory(idP,idV,time)
-            return None
+                return EventType.NEED_PLATE

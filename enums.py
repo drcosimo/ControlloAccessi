@@ -7,31 +7,31 @@ class GateName(IntEnum):
     GATE_OVEST = 4
 
 class EventType(IntEnum):
+    PLATE = 1
+    BADGE = 2
+    HUMAN_ACTION = 3
+    OPEN_GATE = 4
+    GRANT_OK = 5
+    GRANT_REFUSED = 6
+    NEED_PLATE = 7
+    NEED_BADGE = 8
+
+class PolicyType(IntEnum):
     ONLY_BADGE_POLICY = 1
     ONLY_PLATE_POLICY = 2
     BADGE_PLATE_POLICY = 3
     NO_POLICY = 4
-    PLATE = 5
-    BADGE = 6
-    HUMAN_ACTION = 7
-    OPEN_GATE = 8
-    BADGE_PLATE_OK = 8
-    BADGE_OK = 9
-    PLATE_OK = 10
-    NO_GRANT = 11
-
+    
 class TransitState(IntEnum):
     WAIT_FOR_TRANSIT = 1
     TRANSIT_STARTED = 2
-    GRANT_REQ = 3
-    END_TRANSIT = 4
+    DB_REQ = 3
+    DB_RES = 4
     GRANT_OK = 5
-    MANUAL_GRANT_OK = 6
-    GRANT_RES_BADGEPLATE = 7
-    GRANT_REQ_BADGEPLATE = 8
-    WAIT_FOR_RESPONSE = 9
-    WAIT_FOR_DATA = 10
-    GRANT_REFUSED = 11
+    GRANT_REFUSED = 6
+    WAIT_FOR_DATA = 7
+    END_TRANSIT = 8
+
 
 class DeviceType(IntEnum):
     FRONT_CAM = 1

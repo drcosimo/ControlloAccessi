@@ -1,0 +1,4 @@
+1. portare logica nel Database Subject 
+2. rendere autonomo il logger
+3. fare il main che lancia tutti i simulatori
+4. creare il main che funziona per tutte le lane

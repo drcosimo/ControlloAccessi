@@ -155,7 +155,10 @@ def insertVehiclePolicy(idvehicle, grantpolicy, start, end):
                         "VALUES (?, ?, ?, ?)", (idvehicle, grantpolicy, start, end,))
 
 
-def insertTransitHistory(idPerson, idVehicle, date):
+def insertTransitHistory(plate, badge, date):
+    idVehicle = findIdVehicleFromPlate(plate)
+    idPerson = findIdPersonFromBadge(badge)
+        
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
         

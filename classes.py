@@ -244,9 +244,9 @@ class Connection():
         w.close()
         await w.wait_closed()
 
-    def dbRequest(self,reqType:RequestType,reqArgs):
+    def dbRequest(self,reqArgs):
         # richiesta grant badgeplate
-        req = "{0}".format(reqType)
+        req = ""
         for arg in reqArgs:
             req += ",{0}".format(arg)
    
