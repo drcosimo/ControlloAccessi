@@ -5,11 +5,12 @@ import reactivex
 from enums import *
 
 class Gate():
-    lanes = []
+    
     def __init__(self, idGate, gateName:GateName) -> None:
         self.idGate = idGate
         self.gateName = gateName
         self.loggingMode = False
+        self.lanes = []
     def appendLane(self,lane):
         self.lanes.append(lane)
     
@@ -24,11 +25,12 @@ class Gate():
         return self.lanes
 
 class Lane():
-    laneStatus:LaneStatus = LaneStatus.LANE_NOT_ACTIVE
+    laneStatus:LaneStatus = LaneStatus.LANE_ACTIVE
 
-    devices = []
+    analyzerConnection = None
 
     def __init__(self,idLane,gate:Gate) -> None:
+        self.devices = []
         self.idLane = idLane
         self.gate = gate
     
@@ -67,13 +69,14 @@ class TCPDevice():
         pass
 
 class Event():
-    def __init__(self,value,eventType,deviceType) -> None:
+    def __init__(self,value,eventType,deviceType,lane) -> None:
         self.value = value
         self.deviceType = deviceType
         self.eventType = eventType
+        self.lane = lane
 
     def toString(self) -> string:
-        return "VALUE: {0}, EVENT: {1}, DEVICE: {2}".format(self.value,self.eventType,self.deviceType)
+        return "VALUE: {0}, EVENT: {1}, DEVICE: {2}, LANE: {3}".format(self.value,EventType(self.eventType).name,DeviceType(self.deviceType).name,self.lane.idLane)
 
 class TCPServer(TCPDevice):
     def __init__(self, ip, port, eventType: EventType, deviceType: DeviceType,lane:Lane) -> None:
@@ -102,7 +105,7 @@ class TCPServer(TCPDevice):
                         # decodifica dato
                         value = data.decode("utf-8")
                         # creazione evento 
-                        event = Event(value,self.eventType,self.deviceType)
+                        event = Event(value,self.eventType,self.deviceType,self.lane)
                         #print("ottenuto {0} da {1}".format(event.toString(),peer))
                         # passo l'evento alla funzione on_next dell'observer
                         observer.on_next(event)
@@ -153,7 +156,7 @@ class TCPClient(TCPDevice):
                         value = data.decode("utf-8")
 
                         # creazione evento 
-                        event = Event(value,self.eventType,self.deviceType)
+                        event = Event(value,self.eventType,self.deviceType,self.lane)
                         # passo l'evento alla funzione on_next dell'observer
                         observer.on_next(event)
                         
@@ -213,14 +216,13 @@ class TestAnalyzer(reactivex.Observable):
         #print("errore:{0}".format(error))
 
 class Connection():
-    def __init__(self) -> None:
-        self.dp_ip = "127.0.0.1"
-        self.db_port = 10005
-        self.bar_ip = "127.0.0.1"
-        self.bar_port = 10010
-        self.logger_ip = "127.0.0.1"
-        self.logger_port = 10011
-    
+    def __init__(self,db_ip,db_port,bar_ip,bar_port) -> None:
+        self.dp_ip = db_ip
+        self.db_port = db_port
+        self.bar_ip = bar_ip
+        self.bar_port = bar_port
+
+
     async def connectToDb(self,req):
         r,w = await asyncio.open_connection(self.dp_ip,self.db_port)
         w.write(req.encode("utf-8"))
@@ -237,9 +239,8 @@ class Connection():
         w.close()
         await w.wait_closed()
 
-    def dbRequest(self,reqArgs):
+    def dbRequest(self,plate,badge,time):
         # richiesta grant badgeplate
-        req = ""
-        for arg in reqArgs:
-            req += ",{0}".format(arg)
+        req = f"{plate},{badge},{time}"
+        
         asyncio.create_task(self.connectToDb(req))

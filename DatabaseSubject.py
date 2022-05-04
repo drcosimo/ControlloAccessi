@@ -1,13 +1,13 @@
 import asyncio
 import sys
-from urllib.request import Request
+
 from reactivex import Observable, Subject
 from datetime import datetime, time
 import reactivex
 from database_interactions import *
 
 from classes import TCPDevice,Event
-from enums import DeviceType, EventType, PolicyType, RequestType
+from enums import DeviceType, EventType, PolicyType
 
 class DatabaseSubject(Subject,TCPDevice):
     def __init__(self,ip,port,lane) -> None:
@@ -27,9 +27,10 @@ class DatabaseSubject(Subject,TCPDevice):
                     # one time request, closing connection
                     writer.close()
                     await writer.wait_closed()
-                    #print("Database Subject, received {0} from {1}".format(text,peer))
+                    print("Database Subject, received {0} from {1}".format(text,peer))
                     # type of request, and value associated
                     plate,badge,time = text.split(",")
+
                    
                     result = await self.dbRequest(plate,badge,time)
                     
@@ -38,11 +39,13 @@ class DatabaseSubject(Subject,TCPDevice):
                         insertTransitHistory(plate,badge,time)
                     
                     # emissione risposta all'analyzer
-                    evt = Event("{0},{1}".format(plate,badge),result,DeviceType.SERVER)
+                    evt = Event("{0},{1}".format(plate,badge),result,DeviceType.SERVER,self.lane)
+                    print("database subject, submitting event {0}".format(evt.toString()))
                     observer.on_next(evt)
+
                 except Exception as err:
-                    #print("errore nel database subject")
-                    #print(sys.call_tracing(sys.exc_info()[2],))
+                    print("errore nel database subject")
+                    print(sys.call_tracing(sys.exc_info()[2],))
                     observer.on_error(sys.exc_info())
 
             asyncio.create_task(connect())

@@ -8,11 +8,12 @@ from datetime import date
 from enums import DeviceType, EventType
 class Logger(Observer):
 
-    def __init__(self):
+    def __init__(self,lane):
         self.actualPlate = None
         self.actualBadge = None
+        self.lane = lane
         data = date.today().strftime('%d-%m-%Y')
-        self.fileName = "log_{0}".format(data)
+        self.fileName = "log_{0}_{1}".format(lane,data)
         self.configLog()
         logging.getLogger().addHandler(logging.StreamHandler())
 
