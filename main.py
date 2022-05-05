@@ -22,7 +22,7 @@ async def main():
     gateNord:Gate = GateFactory.createGateNord()
     
     # per ogni lane
-    for lane in gateNord.getLanes():
+    for index, lane in enumerate(gateNord.getLanes()):
         # controllo se è attiva
         if lane.getLaneStatus() == LaneStatus.LANE_ACTIVE:
             observables = []
@@ -31,12 +31,19 @@ async def main():
                 observables.append(device.createObservable())
             
             # merge degli oservable della lane
-            laneObservable = reactivex.merge(*observables)
+            laneObservables.append(reactivex.merge(*observables))
             # creazione analyzer e logger di linea
-            if gateNord.loggingMode:
-                laneObservable.subscribe(Logger(lane))
+            if gateNord.executionMode == ExecutionMode.LOGGING:
+                laneObservers.append(Logger(lane))
+                laneObservables[index].subscribe(laneObservers[index])
+            elif gateNord.executionMode == ExecutionMode.AUTOMATION:
+                laneObservers.append(TransitAnalyzer(lane.analyzerConnection,lane))
+                laneObservables[index].subscribe(laneObservers[index])
             else:
-                laneObservable.subscribe(TransitAnalyzer(lane.analyzerConnection,lane))
+                laneObservers.append(TransitAnalyzer(lane.analyzerConnection, lane))
+                laneObservers[index].createObservable().subscribe(Logger(lane))
+                laneObservables[index].subscribe(laneObservers[index])
+            
             
 if __name__ == "__main__":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())

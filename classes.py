@@ -9,8 +9,9 @@ class Gate():
     def __init__(self, idGate, gateName:GateName) -> None:
         self.idGate = idGate
         self.gateName = gateName
-        self.loggingMode = False
+        self.executionMode = ExecutionMode.AUTOMATION_LOGGING
         self.lanes = []
+
     def appendLane(self,lane):
         self.lanes.append(lane)
     
@@ -25,15 +26,14 @@ class Gate():
         return self.lanes
 
 class Lane():
-    laneStatus:LaneStatus = LaneStatus.LANE_ACTIVE
-
-    analyzerConnection = None
 
     def __init__(self,idLane,gate:Gate) -> None:
         self.devices = []
         self.idLane = idLane
         self.gate = gate
-    
+        self.laneStatus = LaneStatus.LANE_ACTIVE
+        self.analyzerConnection = None
+
     def appendDevice(self,device):
         self.devices.append(device)
 
@@ -216,11 +216,13 @@ class TestAnalyzer(reactivex.Observable):
         #print("errore:{0}".format(error))
 
 class Connection():
-    def __init__(self,db_ip,db_port,bar_ip,bar_port) -> None:
+    def __init__(self,db_ip,db_port,bar_ip,bar_port,logger_ip,logger_port) -> None:
         self.dp_ip = db_ip
         self.db_port = db_port
         self.bar_ip = bar_ip
         self.bar_port = bar_port
+        self.logger_ip = logger_ip
+        self.logger_port = logger_port
 
 
     async def connectToDb(self,req):
@@ -244,3 +246,16 @@ class Connection():
         req = f"{plate},{badge},{time}"
         
         asyncio.create_task(self.connectToDb(req))
+
+    def loggerRequest(self, evt: Event):
+        req = f"{evt.value},{evt.eventType},{evt.deviceType}"
+
+        asyncio.create_task(self.connectToLogger(req))
+
+    async def connectToLogger(self, evt):
+        r, w = await asyncio.open_connection(self.logger_ip, self.logger_port)
+        w.write(evt.encode("utf-8"))
+        await w.drain()
+
+        w.close()
+        await w.wait_closed()

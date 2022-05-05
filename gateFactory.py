@@ -1,10 +1,11 @@
 from classes import *
 from DatabaseSubject import DatabaseSubject
 from enums import *
+
 class GateFactory:
     def createGateNord() -> Gate:
         gate = Gate(1,GateName.GATE_NORD)
-        gate.loggingMode = False
+        gate.loggingMode = True
 
         lane1 = Lane(1,gate)
         frontCam_L1 = FrontCam("127.0.0.1",10001,lane1)
@@ -13,7 +14,7 @@ class GateFactory:
         button_L1 = Button("127.0.0.1",10004,lane1)
         db_L1 = DatabaseSubject("127.0.0.1",10006,lane1)
         # connessioni del lane analyzer
-        conn_L1 = Connection("127.0.0.1",10006,"127.0.0.1",10005)
+        conn_L1 = Connection("127.0.0.1",10006,"127.0.0.1",10005,"127.0.0.1",10007)
         
         lane1.appendDevice(frontCam_L1)
         lane1.appendDevice(rearCam_L1)
@@ -32,7 +33,7 @@ class GateFactory:
         button_L2 = Button("127.0.0.1",20004,lane2)
         db_L2 = DatabaseSubject("127.0.0.1",20006,lane2)
         # connessioni del lane analyzer
-        conn_L2 = Connection("127.0.0.1",20006,"127.0.0.1",20005)
+        conn_L2 = Connection("127.0.0.1",20006,"127.0.0.1",20005,"127.0.0.1",20007)
         
         lane2.appendDevice(frontCam_L2)
         lane2.appendDevice(rearCam_L2)

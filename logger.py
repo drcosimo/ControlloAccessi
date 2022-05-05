@@ -13,33 +13,32 @@ class Logger(Observer):
         self.actualBadge = None
         self.lane = lane
         data = date.today().strftime('%d-%m-%Y')
-        self.fileName = "log_{0}_{1}".format(lane,data)
+        self.fileName = "log_{0}_{1}".format(lane.idLane,data)
         self.configLog()
-        logging.getLogger().addHandler(logging.StreamHandler())
+        # logging.getLogger().addHandler(logging.StreamHandler())
 
     def configLog(self):
-        logging.basicConfig(filename=self.fileName,filemode='w',
+        print(f"filename: {self.fileName}")
+        logging.basicConfig(filename=self.fileName,filemode='a',
             format='%(asctime)s %(levelname)-8s %(message)s',
             level=logging.INFO,
             datefmt='%d-%m-%Y %H:%M:%S'
         )
 
-    '''
-    tipoevento      targa       badge            device      timestamp
-    PLATE           ER232EW      fbasbfabf              FRONTCAM    12.12.12:3
-    '''
-    #TODO aggiungere formattatore eventi
 
     def on_next(self,evento:Event):
         # stampa eventi
         # impostazione file giornaliero
-        fileDate = self.fileName.split("_")[1]
+        fileLane = self.fileName.split("_")[1]
+        fileDate = self.fileName.split("_")[2]
         actualDate = date.today().strftime('%d-%m-%Y')
-        if fileDate != actualDate:
-            self.fileName = "log_{0}".format(actualDate)
-            self.configLog(self)
-        
-        logging.info(self.formatEvent(evento))
+        if fileDate != actualDate or self.lane.idLane != fileLane:
+            self.fileName = "log_{0}_{1}.txt".format(self.lane.idLane, actualDate)
+            self.configLog()
+
+        #print(f"{self.formatEvent(evento)}\t LANE: {evento.lane.idLane}")
+        if (evento.eventType != EventType.NEED_BADGE and evento.eventType != EventType.NEED_PLATE) and not((evento.eventType == EventType.PLATE or evento.eventType == EventType.BADGE) and (self.actualBadge is not None or self.actualPlate is not None)):
+            logging.info(f"{self.formatEvent(evento)}\t LANE: {evento.lane.idLane}")
 
 
     def on_completed(self) -> None:
@@ -59,19 +58,24 @@ class Logger(Observer):
         if self.actualPlate is None and self.actualBadge is None:
             if evtType == EventType.PLATE:
                 self.actualPlate = evt.value
-                return f"TRANSIT_STARTED_FROM_PLATE\t{value}\t READ BY {DeviceType(devType).name}"
+                return '\033[94m' + f"TRANSIT_STARTED_FROM_PLATE\t{value}\t READ BY {DeviceType(devType).name}" + '\033[0m'
             elif evtType == EventType.BADGE:
                 self.actualBadge = evt.value
-                return f"TRANSIT_STARTED_FROM_BADGE\t{value}\t READ BY {DeviceType(devType).name}"
+                return '\033[94m' + f"TRANSIT_STARTED_FROM_BADGE\t{value}\t READ BY {DeviceType(devType).name}" + '\033[0m'
         
         if evtType == EventType.HUMAN_ACTION:
-            return "manual_open_gate"
+            self.cleanLogger()
+            return '\033[96m' + "manual_open_gate" + '\033[0m'
 
         if evtType == EventType.GRANT_REFUSED:
-            return f"ACCESS_REFUSED TO\t{value}"
+            self.cleanLogger()
+            return '\033[91m' + f"ACCESS_REFUSED TO\t{value}" + '\033[0m'
         
         if evtType == EventType.GRANT_OK:
-            return f"ACCESS_GRANTED TO\t{value}"
+            self.cleanLogger()
+            return '\033[92m' + f"ACCESS_GRANTED TO\t{value}" + '\033[0m'
+
+        return f"evento sbagliato: {evt.toString()}"
 
     def formatEventValue(self, evt):
         if evt is not None:
@@ -85,3 +89,7 @@ class Logger(Observer):
             return values
 
         return None
+
+    def cleanLogger(self):
+        self.actualBadge = None
+        self.actualPlate = None

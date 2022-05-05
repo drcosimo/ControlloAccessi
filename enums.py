@@ -51,3 +51,8 @@ class RequestType(IntEnum):
 class LaneStatus(IntEnum):
     LANE_ACTIVE = 1
     LANE_NOT_ACTIVE = 2
+
+class ExecutionMode(IntEnum):
+    LOGGING = 1
+    AUTOMATION = 2
+    AUTOMATION_LOGGING = 3

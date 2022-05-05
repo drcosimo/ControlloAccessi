@@ -3,7 +3,6 @@ import random
 import string
 
 from database_connection import DatabaseConnection
-from custom_errors import NotUniqueException
 import uuid
 
 from enums import EventType, RequestType
@@ -229,7 +228,7 @@ def findIdPersonFromBadge(badge):
         result = cursor.fetchall()
 
         if len(result) > 1:
-            raise NotUniqueException("Il badge inserito non è unico")
+            raise SyntaxError("Il badge inserito non è unico")
         elif len(result) == 0:
             return None
 
@@ -245,7 +244,7 @@ def findIdVehicleFromPlate(plate):
         result = cursor.fetchall()
 
         if len(result) > 1:
-            raise NotUniqueException("La targa inserita non è unica")
+            raise SyntaxError("La targa inserita non è unica")
         elif len(result) == 0:
             return None
 
@@ -266,7 +265,7 @@ def selectPolicyFromPerson(badge, actualTime):
         result = cursor.fetchall()
 
     if len(result) > 1:
-        raise NotUniqueException("La policy cercata non è unica")
+        raise SyntaxError("La policy cercata non è unica")
 
     if len(result) > 0: 
         return int(result[0][0])
@@ -287,7 +286,7 @@ def selectPolicyFromVehicle(plate, actualTime):
         result = cursor.fetchall()
 
     if len(result) > 1:
-        raise NotUniqueException("La policy cercata non è unica")
+        raise SyntaxError("La policy cercata non è unica")
 
     if len(result) > 0: 
         return int(result[0][0])

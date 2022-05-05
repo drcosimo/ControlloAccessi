@@ -1,13 +1,10 @@
 import asyncio
-from datetime import datetime
 import sys
-
-import reactivex
-from custom_errors import AlreadyInitialized
 from reactivex import Observable, Subject
+import reactivex
 
 from enums import *
-from classes import Connection,Event
+from classes import Event
 
 class TransitAnalyzer(Subject):
     def __init__(self,connection,lane):
@@ -41,9 +38,52 @@ class TransitAnalyzer(Subject):
         else:
             print('\033[92m'+"ANALYZER-{0}--stato:{1}".format(evt.toString(),TransitState(state).name) +'\033[0m')
 
+
+    # metodo per l'emissione dati al logger
+    def createObservable(self) -> Observable:
+        def on_subscription(observer,scheduler):
+            async def connect():
+                # apertura connessione con il server
+                server = await asyncio.start_server(handleClient, self.connections.logger_ip,self.connections.logger_port)
+                # gestione comunicazione con il server
+                await server.serve_forever()
+            # client callback handler
+            async def handleClient(reader:asyncio.StreamReader,writer:asyncio.StreamWriter):
+                try:
+                    # aspetto dato in arrivo
+                    data = await reader.read(1024)
+                    # decodifica dato
+                    value = data.decode("utf-8")
+                    tmp = value.split(",")
+
+                    if len(tmp) > 3:
+                        event = Event(f"{tmp[0]},{tmp[1]}", int(tmp[2]), int(tmp[3]), self.lane)
+                    elif len(tmp) > 2:
+                        event = Event(tmp[0], int(tmp[1]), int(tmp[2]), self.lane)
+                    elif len(tmp) > 1:
+                        event = Event(None, int(tmp[0]), int(tmp[1]), self.lane)
+
+                    # passo l'evento alla funzione on_next dell'observer
+                    observer.on_next(event)
+                        
+                    # termino comunicazione 
+                    writer.close()
+                    await writer.wait_closed()
+                except Exception as err:
+                    #print("({0},{1}) client, connection with {2} interrupted".format(self.ip,self.port,peer))
+                    #print(sys.call_tracing(sys.exc_info()[2],))
+                    # passo l'errore all'observer
+                    observer.on_error(sys.exc_info())
+
+            # creazione task della funzione connect
+            asyncio.create_task(connect())
+        # creo un osservabile a partire dalla funzione che definisce la sorgente dei dati
+        return reactivex.create(on_subscription)
             
     
-    async def analyze(self, event:Event): # TODO: aggiungere il tipo all'event
+    async def analyze(self, event:Event):
+
+        self.connections.loggerRequest(event)
 
         # ----------------------------------------------------
         # waiting for transit q0
