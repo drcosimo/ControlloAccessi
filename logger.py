@@ -3,7 +3,7 @@ from reactivex import Observer
 from classes import Event
 
 import logging
-from datetime import date
+from datetime import date, datetime
 
 from enums import DeviceType, EventType
 class Logger(Observer):
@@ -13,32 +13,23 @@ class Logger(Observer):
         self.actualBadge = None
         self.lane = lane
         data = date.today().strftime('%d-%m-%Y')
-        self.fileName = "log_{0}_{1}".format(lane.idLane,data)
-        self.configLog()
-        # logging.getLogger().addHandler(logging.StreamHandler())
+        self.fileName = "./loggingFiles/log_{0}_{1}.txt".format(lane.idLane,data)
 
-    def configLog(self):
-        print(f"filename: {self.fileName}")
-        logging.basicConfig(filename=self.fileName,filemode='a',
-            format='%(asctime)s %(levelname)-8s %(message)s',
-            level=logging.INFO,
-            datefmt='%d-%m-%Y %H:%M:%S'
-        )
-
-
-    def on_next(self,evento:Event):
-        # stampa eventi
-        # impostazione file giornaliero
-        fileLane = self.fileName.split("_")[1]
+    def checkDate(self):
+        today = date.today().strftime('%d-%m-%Y')
         fileDate = self.fileName.split("_")[2]
-        actualDate = date.today().strftime('%d-%m-%Y')
-        if fileDate != actualDate or self.lane.idLane != fileLane:
-            self.fileName = "log_{0}_{1}.txt".format(self.lane.idLane, actualDate)
-            self.configLog()
+        if today != fileDate:
+            self.fileName = "./loggingFiles/log_{0}_{1}.txt".format(self.lane.idLane,today)
+        
+    def on_next(self,evento:Event):
+        
+        # un file per ogni giorno
+        self.checkDate()
 
-        #print(f"{self.formatEvent(evento)}\t LANE: {evento.lane.idLane}")
-        if (evento.eventType != EventType.NEED_BADGE and evento.eventType != EventType.NEED_PLATE) and not((evento.eventType == EventType.PLATE or evento.eventType == EventType.BADGE) and (self.actualBadge is not None or self.actualPlate is not None)):
-            logging.info(f"{self.formatEvent(evento)}\t LANE: {evento.lane.idLane}")
+        # apertura file per scrittura
+        with open(file = self.fileName,mode='a') as file:
+            if (evento.eventType != EventType.NEED_BADGE and evento.eventType != EventType.NEED_PLATE) and not((evento.eventType == EventType.PLATE or evento.eventType == EventType.BADGE) and (self.actualBadge is not None or self.actualPlate is not None)):
+                file.write(f"{datetime.now().strftime('%H:%M:%S')} -[INFO]- \t\t{self.formatEvent(evento)}\n")
 
 
     def on_completed(self) -> None:
@@ -54,26 +45,29 @@ class Logger(Observer):
         evtType = int(evt.eventType)
         devType = int(evt.deviceType)
 
-        # TRANSIT STARTED LOG
         if self.actualPlate is None and self.actualBadge is None:
             if evtType == EventType.PLATE:
                 self.actualPlate = evt.value
-                return '\033[94m' + f"TRANSIT_STARTED_FROM_PLATE\t{value}\t READ BY {DeviceType(devType).name}" + '\033[0m'
+                return f"TRANSIT_STARTED_FROM_PLATE\t{value}\t READ BY {DeviceType(devType).name}" 
             elif evtType == EventType.BADGE:
                 self.actualBadge = evt.value
-                return '\033[94m' + f"TRANSIT_STARTED_FROM_BADGE\t{value}\t READ BY {DeviceType(devType).name}" + '\033[0m'
+                return f"TRANSIT_STARTED_FROM_BADGE\t{value}\t READ BY {DeviceType(devType).name}"
         
         if evtType == EventType.HUMAN_ACTION:
             self.cleanLogger()
-            return '\033[96m' + "manual_open_gate" + '\033[0m'
+            return "manual_open_gate"
 
         if evtType == EventType.GRANT_REFUSED:
             self.cleanLogger()
-            return '\033[91m' + f"ACCESS_REFUSED TO\t{value}" + '\033[0m'
+            return f"ACCESS_REFUSED TO\t{value}"
         
         if evtType == EventType.GRANT_OK:
             self.cleanLogger()
-            return '\033[92m' + f"ACCESS_GRANTED TO\t{value}" + '\033[0m'
+            return f"ACCESS_GRANTED TO\t{value}"
+
+        if evtType == EventType.TIMED_OUT:
+            self.cleanLogger()
+            return f"REQUEST TIMED OUT FOR\t{value}"
 
         return f"evento sbagliato: {evt.toString()}"
 

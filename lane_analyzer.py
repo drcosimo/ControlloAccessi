@@ -14,6 +14,7 @@ class TransitAnalyzer(Subject):
         self.connections = connection
         self.startTimeTransit = None
         self.endTimeTransit = None
+        self.startedWith = None
         self.lastPlate = None
         self.lastBadge = None
         self.lane = lane
@@ -33,11 +34,27 @@ class TransitAnalyzer(Subject):
         print("Evento completato")    # TODO: Gestire tramite console oppure tramite logger?
 
     def prettyPrint(self,evt:Event,state):
-        if evt.lane.idLane == 1:
-            print('\033[94m'+"ANALYZER-{0}--stato:{1}".format(evt.toString(),TransitState(state).name) +'\033[0m')
+        log = "ANALYZER-{0}--stato:{1}".format(evt.toString(),TransitState(state).name)
+        
+        if self.transitState == TransitState.REQUEST_TIMED_OUT:
+            print('\x1b[38;5;196m'+ log +'\033[0m')
+        elif evt.lane.idLane == 1:
+            print('\033[94m'+ log +'\033[0m')
         else:
-            print('\033[92m'+"ANALYZER-{0}--stato:{1}".format(evt.toString(),TransitState(state).name) +'\033[0m')
+            print('\033[92m'+ log +'\033[0m')
 
+    async def timeout(self):
+        await asyncio.sleep(5)
+
+        if self.transitState == TransitState.WAIT_FOR_DATA:
+                self.connections.loggerRequest(Event(self.startedWith,EventType.TIMED_OUT,DeviceType.ANALYZER,self.lane))
+                self.transitState = TransitState.REQUEST_TIMED_OUT
+                self.prettyPrint(None,self.transitState)
+        else:
+            try:
+                asyncio.current_task().cancel()
+            except asyncio.CancelledError:
+                pass
 
     # metodo per l'emissione dati al logger
     def createObservable(self) -> Observable:
@@ -95,10 +112,12 @@ class TransitAnalyzer(Subject):
                 self.transitState = TransitState.GRANT_OK
             elif event.eventType == EventType.PLATE and event.value != self.lastPlate:
                 self.actualPlate = event.value
+                self.startedWith = event.value
                  # passo al secondo stato
                 self.transitState = TransitState.TRANSIT_STARTED
             elif event.eventType == EventType.BADGE and event.value != self.lastBadge:
                 self.actualBadge = event.value
+                self.startedWith = event.value
                 # passo al secondo stato
                 self.transitState = TransitState.TRANSIT_STARTED
                  
@@ -153,7 +172,10 @@ class TransitAnalyzer(Subject):
        
         if self.transitState == TransitState.WAIT_FOR_DATA:
             self.prettyPrint(event,self.transitState)
-            # TODO aggiungere timeout
+
+            # metodo di timeout
+            asyncio.create_task(self.timeout())
+            
             if event.eventType == EventType.HUMAN_ACTION:
                 self.transitState = TransitState.GRANT_OK
             elif self.actualPlate != None and event.eventType == EventType.BADGE:
@@ -184,6 +206,16 @@ class TransitAnalyzer(Subject):
                 self.transitState = TransitState.END_TRANSIT
 
         # ----------------------------------------------------
+        # richiesta scaduta, fine transito forzata
+        # ----------------------------------------------------
+        if self.transitState == TransitState.REQUEST_TIMED_OUT:
+            self.prettyPrint(event,self.transitState)
+            if event.eventType == EventType.HUMAN_ACTION:
+                self.transitState = TransitState.GRANT_OK
+            else:
+                self.transitState = TransitState.END_TRANSIT
+
+        # ----------------------------------------------------
         # fine transito, ritorno stato iniziale
         # ----------------------------------------------------
         if self.transitState == TransitState.END_TRANSIT:
@@ -198,3 +230,4 @@ class TransitAnalyzer(Subject):
         self.transitState = TransitState.WAIT_FOR_TRANSIT
         self.startTimeTransit = None
         self.endTimeTransit = None
+        self.startedWith = None

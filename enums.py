@@ -15,6 +15,7 @@ class EventType(IntEnum):
     GRANT_REFUSED = 6
     NEED_PLATE = 7
     NEED_BADGE = 8
+    TIMED_OUT = 9
 
 class PolicyType(IntEnum):
     ONLY_BADGE_POLICY = 1
@@ -31,6 +32,7 @@ class TransitState(IntEnum):
     GRANT_REFUSED = 6
     WAIT_FOR_DATA = 7
     END_TRANSIT = 8
+    REQUEST_TIMED_OUT = 9
 
 
 class DeviceType(IntEnum):
@@ -40,13 +42,7 @@ class DeviceType(IntEnum):
     BUTTON = 4
     SERVER = 5
     BAR = 6
-
-class RequestType(IntEnum):
-    POLICY = 1
-    FIND_PLATE = 2
-    FIND_BADGE = 3
-    FIND_PLATE_BADGE = 4
-    INSERT_TRANSIT_HISTORY = 5
+    ANALYZER = 7
 
 class LaneStatus(IntEnum):
     LANE_ACTIVE = 1

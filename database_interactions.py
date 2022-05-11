@@ -5,7 +5,7 @@ import string
 from database_connection import DatabaseConnection
 import uuid
 
-from enums import EventType, RequestType
+from enums import EventType
 
 
 DATABASE_NAME = "database.db"
