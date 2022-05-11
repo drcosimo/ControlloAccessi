@@ -36,7 +36,7 @@ class TransitAnalyzer(Subject):
     def prettyPrint(self,evt:Event,state):
         log = "ANALYZER-{0}--stato:{1}".format(evt.toString(),TransitState(state).name)
         
-        if self.transitState == TransitState.REQUEST_TIMED_OUT:
+        if evt.eventType == EventType.TIMED_OUT:
             print('\x1b[38;5;196m'+ log +'\033[0m')
         elif evt.lane.idLane == 1:
             print('\033[94m'+ log +'\033[0m')
@@ -44,12 +44,13 @@ class TransitAnalyzer(Subject):
             print('\033[92m'+ log +'\033[0m')
 
     async def timeout(self):
-        await asyncio.sleep(5)
+        await asyncio.sleep(120)
 
         if self.transitState == TransitState.WAIT_FOR_DATA:
-                self.connections.loggerRequest(Event(self.startedWith,EventType.TIMED_OUT,DeviceType.ANALYZER,self.lane))
-                self.transitState = TransitState.REQUEST_TIMED_OUT
-                self.prettyPrint(None,self.transitState)
+                evt = Event(self.startedWith,EventType.TIMED_OUT,DeviceType.ANALYZER,self.lane)
+                self.connections.loggerRequest(evt)
+                self.prettyPrint(evt,self.transitState)
+                self.cleanAnalyzer()
         else:
             try:
                 asyncio.current_task().cancel()
@@ -199,16 +200,6 @@ class TransitAnalyzer(Subject):
         # accesso non consentito
         # ----------------------------------------------------
         if self.transitState == TransitState.GRANT_REFUSED:
-            self.prettyPrint(event,self.transitState)
-            if event.eventType == EventType.HUMAN_ACTION:
-                self.transitState = TransitState.GRANT_OK
-            else:
-                self.transitState = TransitState.END_TRANSIT
-
-        # ----------------------------------------------------
-        # richiesta scaduta, fine transito forzata
-        # ----------------------------------------------------
-        if self.transitState == TransitState.REQUEST_TIMED_OUT:
             self.prettyPrint(event,self.transitState)
             if event.eventType == EventType.HUMAN_ACTION:
                 self.transitState = TransitState.GRANT_OK
