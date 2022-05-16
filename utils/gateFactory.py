@@ -1,6 +1,9 @@
-from classes import *
-from DatabaseSubject import DatabaseSubject
-from enums import *
+from model.Devices import *
+from database.DatabaseSubject import DatabaseSubject
+from utils.enums import *
+from model.Gate import Gate
+from model.Connection import Connection
+from model.Lane import Lane
 
 class GateFactory:
     def createGateNord() -> Gate:

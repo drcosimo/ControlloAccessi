@@ -3,8 +3,8 @@ import sys
 from reactivex import Observable, Subject
 import reactivex
 
-from enums import *
-from classes import Event
+from utils.enums import *
+from model.Event import Event
 
 class TransitAnalyzer(Subject):
     def __init__(self,connection,lane):

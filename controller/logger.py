@@ -1,11 +1,10 @@
 from time import strftime
 from reactivex import Observer
-from classes import Event
+from model.Event import Event
 
-import logging
 from datetime import date, datetime
 
-from enums import DeviceType, EventType
+from utils.enums import DeviceType, EventType
 class Logger(Observer):
 
     def __init__(self,lane):
@@ -13,13 +12,13 @@ class Logger(Observer):
         self.actualBadge = None
         self.lane = lane
         data = date.today().strftime('%d-%m-%Y')
-        self.fileName = "./loggingFiles/log_{0}_{1}.txt".format(lane.idLane,data)
+        self.fileName = "../loggingFiles/log_{0}_{1}.txt".format(lane.idLane,data)
 
     def checkDate(self):
         today = date.today().strftime('%d-%m-%Y')
         fileDate = self.fileName.split("_")[2]
         if today != fileDate:
-            self.fileName = "./loggingFiles/log_{0}_{1}.txt".format(self.lane.idLane,today)
+            self.fileName = "../loggingFiles/log_{0}_{1}.txt".format(self.lane.idLane,today)
         
     def on_next(self,evento:Event):
         

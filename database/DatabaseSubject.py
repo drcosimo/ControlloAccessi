@@ -2,12 +2,12 @@ import asyncio
 import sys
 
 from reactivex import Observable, Subject
-from datetime import datetime, time
 import reactivex
-from database_interactions import *
+from database.database_interactions import *
 
-from classes import TCPDevice,Event
-from enums import DeviceType, EventType, PolicyType
+from model.TCPDevice import TCPDevice
+from model.Event import Event
+from utils.enums import DeviceType, EventType, PolicyType
 
 class DatabaseSubject(Subject,TCPDevice):
     def __init__(self,ip,port,lane) -> None:

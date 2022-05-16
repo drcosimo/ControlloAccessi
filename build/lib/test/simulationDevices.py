@@ -1,7 +1,7 @@
 import asyncio
 import sys
 import random as rd
-from database_interactions import extractRandomBadge,extractRandomPlate
+from database.database_interactions import extractRandomBadge,extractRandomPlate
 
 # lane 1 => 10001,10002,10003,10004,10005
 

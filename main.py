@@ -1,12 +1,12 @@
 import asyncio
 
-from classes import *
-from enums import *
-from gateFactory import *
-from reactivex import Observable
-from database_interactions import generateDbTest
-from lane_analyzer import TransitAnalyzer
-from logger import Logger
+from model.Devices import *
+from utils.enums import *
+from utils.gateFactory import *
+from database.database_interactions import generateDbTest
+from controller.lane_analyzer import TransitAnalyzer
+from controller.logger import Logger
+import reactivex
 
 gateNord:Gate = None
  # lista di observables

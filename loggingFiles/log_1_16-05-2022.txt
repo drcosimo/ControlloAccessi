@@ -1,0 +1,13 @@
+11:27:47 -[INFO]- 		manual_open_gate
+11:28:25 -[INFO]- 		manual_open_gate
+11:28:56 -[INFO]- 		manual_open_gate
+11:29:29 -[INFO]- 		manual_open_gate
+11:44:16 -[INFO]- 		manual_open_gate
+11:44:53 -[INFO]- 		manual_open_gate
+11:47:24 -[INFO]- 		TRANSIT_STARTED_FROM_PLATE	['DG326HI']	 READ BY REAR_CAM
+11:47:25 -[INFO]- 		ACCESS_REFUSED TO	['DG326HI', '2510c0d2-d4fd-11ec-a9f7-28f10e16f9b5']
+11:47:35 -[INFO]- 		TRANSIT_STARTED_FROM_PLATE	['WV250QG']	 READ BY FRONT_CAM
+11:47:44 -[INFO]- 		manual_open_gate
+11:47:49 -[INFO]- 		TRANSIT_STARTED_FROM_PLATE	['AS043AB']	 READ BY REAR_CAM
+11:48:00 -[INFO]- 		manual_open_gate
+11:48:00 -[INFO]- 		ACCESS_REFUSED TO	['AS043AB', '']

@@ -1,13 +1,16 @@
 from os import curdir
 import random 
 import string
+import os
 
-from database_connection import DatabaseConnection
+from database.database_connection import DatabaseConnection
 import uuid
 
-from enums import EventType
+from utils.enums import EventType
 
 
+absolute_path = r"C:\Users\UTENTE\Documents\AccessControlSystem\project\ControlloAccessi\database"
+os.chdir(absolute_path)
 DATABASE_NAME = "database.db"
 
 """
@@ -463,13 +466,13 @@ def dropTables():
     with DatabaseConnection(DATABASE_NAME) as connection:
         cursor = connection.cursor()
 
-        cursor.execute("DROP TABLE Person")
-        cursor.execute("DROP TABLE Vehicle")
-        cursor.execute("DROP TABLE PersonVehicle")
-        cursor.execute("DROP TABLE Policy")
-        cursor.execute("DROP TABLE PersonPolicy")
-        cursor.execute("DROP TABLE VehiclePolicy")
-        cursor.execute("DROP TABLE TransitHistory")
+        cursor.execute("DROP TABLE IF EXISTS Person")
+        cursor.execute("DROP TABLE IF EXISTS Vehicle")
+        cursor.execute("DROP TABLE IF EXISTS PersonVehicle")
+        cursor.execute("DROP TABLE IF EXISTS Policy")
+        cursor.execute("DROP TABLE IF EXISTS PersonPolicy")
+        cursor.execute("DROP TABLE IF EXISTS VehiclePolicy")
+        cursor.execute("DROP TABLE IF EXISTS TransitHistory")
 
 
 def findPlateInVehicles(plate):
