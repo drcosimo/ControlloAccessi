@@ -6,6 +6,7 @@ import reactivex
 from utils.enums import *
 from model.Event import Event
 
+# classe per l'analisi e relativa automazione degli eventi emessi 
 class TransitAnalyzer(Subject):
     def __init__(self,connection,lane):
         self.actualPlate = None
@@ -43,6 +44,7 @@ class TransitAnalyzer(Subject):
         else:
             print('\033[92m'+ log +'\033[0m')
 
+    # metodo di timeout per limitare il tempo d'attesa dei dati
     async def timeout(self):
         await asyncio.sleep(120)
 
@@ -98,7 +100,7 @@ class TransitAnalyzer(Subject):
         # creo un osservabile a partire dalla funzione che definisce la sorgente dei dati
         return reactivex.create(on_subscription)
             
-    
+    # metodo di logica di automazione
     async def analyze(self, event:Event):
 
         self.connections.loggerRequest(event)
@@ -213,6 +215,7 @@ class TransitAnalyzer(Subject):
             self.prettyPrint(event,self.transitState)
             self.cleanAnalyzer()
 
+    # metodo di ripristino dello stato iniziale
     def cleanAnalyzer(self):
         self.lastPlate = self.actualPlate
         self.lastBadge = self.actualBadge

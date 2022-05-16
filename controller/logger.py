@@ -5,6 +5,8 @@ from model.Event import Event
 from datetime import date, datetime
 
 from utils.enums import DeviceType, EventType
+
+# classe per l'analisi e la visualizzazione degli eventi emessi 
 class Logger(Observer):
 
     def __init__(self,lane):
@@ -14,6 +16,7 @@ class Logger(Observer):
         data = date.today().strftime('%d-%m-%Y')
         self.fileName = "../loggingFiles/log_{0}_{1}.txt".format(lane.idLane,data)
 
+    # metodo di creazione del nome del file del logger
     def checkDate(self):
         today = date.today().strftime('%d-%m-%Y')
         fileDate = self.fileName.split("_")[2]
@@ -37,6 +40,7 @@ class Logger(Observer):
     def on_error(self, error: Exception) -> None:
         return super().on_error(error)
     
+    # metodo di formattazione del messaggio di log in base all'evento
     def formatEvent(self,evt: Event):
         
         value = self.formatEventValue(evt.value)
@@ -70,6 +74,7 @@ class Logger(Observer):
 
         return f"evento sbagliato: {evt.toString()}"
 
+    # metodo di formattazione valore dell'evento
     def formatEventValue(self, evt):
         if evt is not None:
             values = evt.split(",")
@@ -83,6 +88,7 @@ class Logger(Observer):
 
         return None
 
+    # metodo di ripristino dello stato iniziale del logger
     def cleanLogger(self):
         self.actualBadge = None
         self.actualPlate = None
