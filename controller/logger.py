@@ -53,8 +53,9 @@ class Logger(Observer):
                 return f"TRANSIT_STARTED_FROM_BADGE\t{value}\t READ BY {DeviceType(devType).name}"
         
         if evtType == EventType.HUMAN_ACTION:
+            str = f"manual_open_gate to {self.actualPlate}"
             self.cleanLogger()
-            return "manual_open_gate"
+            return str
 
         if evtType == EventType.GRANT_REFUSED:
             self.cleanLogger()
