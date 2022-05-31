@@ -9,10 +9,12 @@ from model.TCPDevice import TCPDevice
 from model.Event import Event
 from utils.enums import DeviceType, EventType, PolicyType
 
+# classe per l'elaborazione richieste al database e relativa emissione 
 class DatabaseSubject(Subject,TCPDevice):
     def __init__(self,ip,port,lane) -> None:
         TCPDevice.__init__(self,ip,port,None,DeviceType.SERVER,lane)
 
+    # metodo di ricezione dati dall'analyzer
     def createObservable(self) -> Observable:
         def on_subscription(observer,scheduler):
             async def connect():
@@ -51,6 +53,7 @@ class DatabaseSubject(Subject,TCPDevice):
             asyncio.create_task(connect())
         return reactivex.create(on_subscription)
     
+    # metodo di accesso al database
     async def dbRequest(self,plate,badge,time):
         if plate != "None" and badge != "None":
             res = findPlateAndBadge(plate,badge)
